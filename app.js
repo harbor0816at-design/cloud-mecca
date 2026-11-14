@@ -53,11 +53,11 @@ const fmtT=d=>PT.fmt(d,loc.tz,LANG);
 
 /* ---------- intro: photo hero, journey cards, next Hajj ---------- */
 const HERO=['kaaba-hajj','haram-hajj','arafat-mount','mina','jamarat-stoning','kaaba-night'];
-{const h=$('#hero');HERO.forEach((s,i)=>{const im=document.createElement('img');im.alt='';im.decoding='async';im.src=photoURL(s,innerWidth>900?1600:800);if(i===0)im.className='on';h.appendChild(im);});
+{const h=$('#hero');HERO.forEach((s,i)=>{const im=document.createElement('img');im.alt='';im.decoding='async';im.onerror=()=>im.remove();im.src=photoURL(s,innerWidth>900?1600:800);if(i===0)im.className='on';h.appendChild(im);});
  let hi=0;const credit=()=>{const P=window.PHOTOS[HERO[hi]];$('#heroCredit').innerHTML=`📷 <a href="${P.p}" target="_blank" rel="noopener">${esc(P.a)}</a> · ${esc(P.l)}`;};credit();
  setInterval(()=>{if($('#intro').classList.contains('hide'))return;const ims=h.querySelectorAll('img');ims[hi].classList.remove('on');hi=(hi+1)%ims.length;ims[hi].classList.add('on');credit();},7000);
  const d=PT.nextArafah&&PT.nextArafah(new Date());if(d){let s='';try{s=d.toLocaleDateString(LOCALE,{year:'numeric',month:'long',day:'numeric'});}catch(e){s=d.toDateString();}$('#nextHajj').textContent=t('nextHajj',{d:s});$('#nextHajj').title=t('nextHajjNote');}else $('#nextHajj').style.display='none';
- $('#jrow').innerHTML=STEPS.map((id,i)=>{const m=SM[id],x=ST[id];return`<button class="jcard" data-step="${id}">${m.photo?`<img loading="lazy" src="${photoURL(m.photo,800)}" alt="">`:''}<div class="ov"></div><span class="n">${nf(i+1)}</span><div class="tx"><small>${esc(x.d)}</small><b>${esc(x.t)}</b></div></button>`;}).join('');}
+ $('#jrow').innerHTML=STEPS.map((id,i)=>{const m=SM[id],x=ST[id];return`<button class="jcard" data-step="${id}">${m.photo?`<img loading="lazy" src="${photoURL(m.photo,800)}" alt="" onerror="this.remove()">`:''}<div class="ov"></div><span class="n">${nf(i+1)}</span><div class="tx"><small>${esc(x.d)}</small><b>${esc(x.t)}</b></div></button>`;}).join('');}
 
 /* ---------- start: everything below needs the 3D engine ---------- */
 if(typeof THREE==='undefined'){$('#loading').textContent=t('engineFail');
@@ -538,14 +538,14 @@ function openQuran(tab){tab=tab||'daily';let surahs=null,filter='';
   root.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{setTab(b.dataset.t);b.dataset.t==='daily'?daily():list();});setTab(tab);tab==='daily'?daily():list();return()=>{alive=false;};});}
 
 /* ---------- requirements & photos ---------- */
-function openReq(){const D=DICT.reqSec||window.I18N.ar.reqSec;openSheet(t('reqT'),`<div class="stephead"><img src="${photoURL('supplicating',800)}" alt=""><div><b>${t('reqT')}</b></div></div><div class="note" style="border:none;margin-top:0;padding-top:0">${t('reqNote')}</div>
+function openReq(){const D=DICT.reqSec||window.I18N.ar.reqSec;openSheet(t('reqT'),`<div class="stephead"><img src="${photoURL('supplicating',800)}" alt="" onerror="this.remove()"><div><b>${t('reqT')}</b></div></div><div class="note" style="border:none;margin-top:0;padding-top:0">${t('reqNote')}</div>
  ${D.map(([h,list])=>`<div class="sec">${h}</div><ul class="st">${list.map(x=>`<li>${x}</li>`).join('')}</ul>`).join('')}
  <div class="sec">${t('typeH')}</div><ul class="st"><li>${t('typeTam')}</li><li>${t('typeQir')}</li><li>${t('typeIfr')}</li></ul>
  <div class="note"><b>${t('reqSrc')}</b><br>${window.REQ_SOURCES.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener" dir="ltr">${esc(n)}</a>`).join('<br>')}<br><br>${t('disclaimer')}</div>`);}
 function openGallery(){openSheet(t('galT'),`<div class="p">${t('galNote')}</div><div class="gal">${Object.keys(window.PHOTOS).map(k=>{const P=window.PHOTOS[k];return`<img loading="lazy" src="${photoURL(k,800)}" alt="${esc(P[LANG])}"><div class="cap">${esc(P[LANG])}</div><div class="cr">📷 <a href="${P.p}" target="_blank" rel="noopener">${esc(P.a)}</a> · ${P.lu?`<a href="${P.lu}" target="_blank" rel="noopener">${esc(P.l)}</a>`:esc(P.l)} · Wikimedia Commons</div>`;}).join('')}</div>`);}
 
 /* ---------- Hajj journey ---------- */
-function stepHead(id,i){const m=SM[id],x=ST[id];return`<div class="stephead">${m.photo?`<img src="${photoURL(m.photo,800)}" alt="">`:''}<div><small>${t('stepN',{n:nf(i+1),m:nf(STEPS.length)})} · ${esc(x.d)}</small><b>${esc(x.t)}</b></div></div>`;}
+function stepHead(id,i){const m=SM[id],x=ST[id];return`<div class="stephead">${m.photo?`<img src="${photoURL(m.photo,800)}" alt="" onerror="this.remove()">`:''}<div><small>${t('stepN',{n:nf(i+1),m:nf(STEPS.length)})} · ${esc(x.d)}</small><b>${esc(x.t)}</b></div></div>`;}
 function openJourney(){const have=me&&me.hajj_course;const prog=store.get('jprog',0);
  openSheet(t('jT'),`<div class="p">${t('jP')}</div>
   ${STEPS.map((id,i)=>`<button class="card" data-s="${id}" style="display:flex;gap:10px;align-items:center;width:100%;text-align:start;cursor:pointer"><span class="chip ${i<prog?'on':''}" style="margin:0">${nf(i+1)}</span><span><small style="color:var(--muted)">${esc(ST[id].d)}</small><br><b>${esc(ST[id].t)}</b></span></button>`).join('')}
