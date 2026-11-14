@@ -37,10 +37,13 @@ function next(loc,method,asr,now){now=now||new Date();const a=day(loc,now,method
  const b=day(loc,new Date(now.getTime()+864e5),method,asr);return b&&b.fajr?{key:'fajr',at:b.fajr,today:a}:null;}
 function qibla(lat,lng){const dl=KAABA[1]-lng;return fix(atan2(sin(dl),cos(lat)*tan(KAABA[0])-sin(lat)*cos(dl)),360);}
 function distKm(lat,lng){const dLat=(KAABA[0]-lat)*D2R,dLng=(KAABA[1]-lng)*D2R;const a=Math.sin(dLat/2)**2+Math.cos(lat*D2R)*Math.cos(KAABA[0]*D2R)*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function hijri(date,lang){const loc=(lang==='zh'?'zh-CN':'en')+'-u-ca-islamic-umalqura';let s='',month=0;
+const LOC={zh:'zh-CN',ar:'ar-SA',en:'en'};
+function hijri(date,lang){const loc=(LOC[lang]||'en')+'-u-ca-islamic-umalqura';let s='',month=0;
  try{s=new Intl.DateTimeFormat(loc,{day:'numeric',month:'long',year:'numeric'}).format(date);}catch(e){}
  try{const p=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{month:'numeric'}).formatToParts(date);month=+(p.find(x=>x.type==='month')||{}).value||0;}catch(e){}
  return{text:s,month};}
-function fmt(date,tz,lang){if(!date)return'—';try{return date.toLocaleTimeString(lang==='zh'?'zh-CN':'en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz});}catch(e){return date.toTimeString().slice(0,5);}}
-root.PT={compute,day,next,qibla,distKm,hijri,fmt,ymdIn,METHODS,ORDER};
+function fmt(date,tz,lang){if(!date)return'—';try{return date.toLocaleTimeString(lang==='zh'?'zh-CN':lang==='ar'?'ar-SA':'en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz});}catch(e){return date.toTimeString().slice(0,5);}}
+function nextArafah(from){const f=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{month:'numeric',day:'numeric'});let d=new Date(from||Date.now());d.setHours(12,0,0,0);
+ for(let i=0;i<400;i++){try{const p=f.formatToParts(d);const m=+p.find(x=>x.type==='month').value,dd=+p.find(x=>x.type==='day').value;if(m===12&&dd===9)return new Date(d);}catch(e){return null;}d=new Date(d.getTime()+864e5);}return null;}
+root.PT={nextArafah,compute,day,next,qibla,distKm,hijri,fmt,ymdIn,METHODS,ORDER};
 })(typeof window!=='undefined'?window:globalThis);

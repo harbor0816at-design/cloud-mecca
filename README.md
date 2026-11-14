@@ -1,23 +1,17 @@
-# 云上麦加 · Cloud Mecca
+# مكة في السحاب · 云上麦加
 
-An online courtyard for remembrance — Web + PWA, Chinese / English.
-一个随时可以进入的线上灵修庭院（网页 + PWA，中英双语）。
+محاكاة تعليمية لرحلة الحج خطوة بخطوة في مشاهد ثلاثية الأبعاد — العربية أولاً، ثم الصينية.
+一步步模拟朝觐的 3D 教学网站（阿拉伯语为主，中文为辅；Web + PWA）。
 
-## Features
-- 3D courtyard with an illustrative Kaaba, prayer rows, galleries and minarets (Three.js r128); other visitors shown live (Supabase Realtime)
-- Prayer times (MWL / ISNA / Egypt / Umm al-Qura / Karachi; Standard or Hanafi Asr), Hijri date, Qibla bearing + device compass — calculated locally in `pt.js`, location never uploaded
-- Tasbih counter (free count or 33·33·34 after salah), live collective totals
-- Public dhikr circle every :00 and :30 (5 min) and user-created dhikr circles
-- Du’a wall (anonymous, moderated, “Āmīn”)
-- Qur’an: daily ayah + surah reader via AlQuran.cloud (Arabic Uthmani; 马坚 Chinese / Pickthall English)
-- Hajj & Umrah practice: free overview; paid guided course with 3D ṭawāf (7 circuits) and saʿy (7 laps)
-- “Support us” (not zakat/sadaqah)
+## المحتوى · 内容
+- 3D scenes (Three.js r128): المسجد الحرام (الكعبة، الحِجر، المقام، الأروقة الثلاثية، المآذن، برج الساعة، المسعى والعلمان الأخضران)، منى (مدينة الخيام)، عرفات (جبل الرحمة، مسجد نمرة، لوحات الحدود)، مزدلفة (ليلاً)، منشأة الجمرات. Crowds of pilgrims are instanced; tawaf crowd moves anticlockwise.
+- Hajj al-Tamattuʿ journey in 11 stages (ihram → tawaf → two rakʿahs & Zamzam → saʿy → taqsir → 8th Mina → 9th Arafah → Muzdalifah → 10th Aqabah/nahr/halq/ifadah → 11–13 three jamarat → farewell tawaf), each with rulings and an interaction (talbiyah, 7 circuits, 7 laps, Mina day/night time-lapse, Arafah noon→sunset, pebble collection 49/70, stoning in order).
+- Hajj requirements (permit/Nusuk, vaccines, health) with sources; next Day of Arafah computed from the Umm al-Qura calendar.
+- Tools: prayer times & qibla (`pt.js`, local), tasbih with live totals, du’a wall (moderated), Qur’an (AlQuran.cloud: Uthmani + al-Muyassar / 马坚).
+- Real photos: freely licensed Wikimedia Commons images mirrored into Supabase Storage (`mecca-media/photos/*`), credited in-app (`window.PHOTOS`).
 
-## Structure
-- `index.html` — shell & styles · `i18n.js` — UI strings, dhikr phrases, cities · `pt.js` — prayer times / qibla / hijri · `app.js` — scene & features
-- `admin.html` — du’a wall moderation (admin key in `mecca_config`) · `privacy.html` — privacy & terms (bilingual)
-- `sw.js`, `manifest.webmanifest` — PWA. Static site, no build step.
+## Files
+`index.html` (shell & styles) · `i18n.js` (ar/zh strings, Hajj stages, photo credits) · `pt.js` · `app.js` · `admin.html` (du’a moderation) · `privacy.html` · `sw.js`, `manifest.webmanifest`. Static, no build step.
 
 ## Backend
-Supabase project `find-thief-europe` (shared), all objects prefixed `mecca_`. RLS on, no direct table access; everything goes through `mecca_*` RPCs.
-Payments: `mecca_config.payments_enabled` (false = free beta). PayPal edge functions `mecca-paypal-checkout` / `mecca-paypal-capture` (secrets: PAYPAL_CLIENT_ID, PAYPAL_SECRET, PAYPAL_ENV, ALLOWED_ORIGINS) are not deployed yet.
+Supabase (`mecca_*` tables/RPCs, RLS on, RPC-only). Edge functions: `mecca-media-sync` (admin-only photo mirror, deployed), `mecca-paypal-checkout` / `mecca-paypal-capture` (written, not deployed). Payments off (`mecca_config.payments_enabled=false`).
