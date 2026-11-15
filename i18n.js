@@ -171,7 +171,7 @@ ar:{
  currency:'العملة',
  /* payments & support */
  supportT:'ادعم «مكة في السحاب»',supportP:'يطوّر هذا الموقع ويديره فرد واحد. إن نفعك، يمكنك دفع مبلغ صغير لدعم الخوادم والتطوير.',supportBtn:'ادعم بـ {p}',supportNote:'هذا دعم للموقع، وليس زكاة ولا صدقة، ولا يُحوَّل إلى أي جهة خيرية.',supportThanks:'جزاك الله خيراً على دعمك!',
- betaFree:'مرحلة تجريبية: الدفع الإلكتروني غير مفعّل، والخدمة مجانية حالياً.',payNote:'يتم الدفع بأمان عبر PayPal، ولا نحتفظ بأي بيانات دفع.',
+ betaFree:'مرحلة تجريبية: الدفع الإلكتروني غير مفعّل، والخدمة مجانية حالياً.',payNote:'يتم الدفع بأمان عبر Stripe (بطاقة، Apple Pay، Google Pay وغيرها)، ولا نحتفظ بأي بيانات دفع.',
  payFail:'تعذّر فتح صفحة الدفع، حاول لاحقاً',payWaiting:'جارٍ تأكيد الدفع…',payDone:'تم الدفع',payCancel:'لم يكتمل الدفع',
  /* menu */
  menuT:'القائمة',goT:'انتقل إلى',scenesT:'المشاعر',mSettings:'الإعدادات',mAmbient:'الأصوات المحيطة',mOn:'تشغيل',mOff:'إيقاف',
@@ -248,7 +248,7 @@ zh:{
  aErr_bad_email:'邮箱格式不正确',aErr_weak_password:'密码至少 8 位',aErr_bad_name:'名称请写 1 到 24 个字',aErr_email_taken:'这个邮箱已经注册过了',aErr_bad_credentials:'邮箱或密码不对',aErr_rate_limited:'尝试太多次了，请稍后再试',aErr_auth:'请重新登录',aErr_offline:'网络不通，请稍后再试',aErr_not_found:'订单不存在',aErr_not_paid:'订单尚未付款',aErr_bad_kind:'无效的操作',
  currency:'币种',
  supportT:'支持云上麦加',supportP:'云上麦加由个人开发和维护。如果它对你有帮助，可以支付一笔小额费用来支持服务器与开发。',supportBtn:'支持 {p}',supportNote:'这是对本站的支持，不是天课或施舍，也不会转交给任何慈善机构。',supportThanks:'谢谢你的支持！',
- betaFree:'测试期：在线支付暂未开放，目前免费。',payNote:'付款通过 PayPal 安全完成，本站不保存任何支付信息。',
+ betaFree:'测试期：在线支付暂未开放，目前免费。',payNote:'付款通过 Stripe 安全完成（银行卡、Apple Pay、Google Pay 等），本站不保存任何支付信息。',
  payFail:'无法打开支付页面，请稍后再试',payWaiting:'正在确认付款…',payDone:'付款成功',payCancel:'付款未完成',
  menuT:'菜单',goT:'前往',scenesT:'圣地',mSettings:'设置',mAmbient:'环境音',mOn:'开',mOff:'关',
  pGate:'禁寺入口',pKaaba:'天房前',pStone:'黑石角',pMaqam:'易卜拉欣立足处',pSafa:'萨法',pMarwa:'麦尔瓦',pRows:'礼拜区'

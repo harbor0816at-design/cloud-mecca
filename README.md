@@ -14,4 +14,4 @@
 `index.html` (shell & styles) · `i18n.js` (ar/zh strings, Hajj stages, photo credits) · `pt.js` · `app.js` · `admin.html` (du’a moderation) · `privacy.html` · `sw.js`, `manifest.webmanifest`. Static, no build step.
 
 ## Backend
-Supabase (`mecca_*` tables/RPCs, RLS on, RPC-only). Edge functions: `mecca-media-sync` (admin-only photo mirror, deployed), `mecca-paypal-checkout` / `mecca-paypal-capture` (written, not deployed). Payments off (`mecca_config.payments_enabled=false`).
+Supabase (`mecca_*` tables/RPCs, RLS on, RPC-only). Edge functions: `mecca-media-sync` (admin-only photo mirror, deployed), Stripe Checkout: `mecca-stripe-checkout`, `mecca-stripe-confirm` (verify JWT) and `mecca-stripe-webhook` (signature-verified), all deployed. Secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (webhook URL `…/functions/v1/mecca-stripe-webhook`, event `checkout.session.completed`). Payments off until `mecca_config.payments_enabled='true'`.

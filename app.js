@@ -480,18 +480,18 @@ function openProfile(){const u=me;const st=[t('statDhikr',{n:nf(u.dhikr)}),t('st
   root.querySelector('#pout').onclick=async()=>{try{await rpc('mecca_logout',{p_token:token});}catch(_){}logoutLocal();closeSheet();};});}
 $('#acctbtn').onclick=()=>openAccount();
 
-/* ---------- payments (PayPal; free during beta) ---------- */
+/* ---------- payments (Stripe Checkout; free during beta) ---------- */
 async function buy(kind){if(!sb){toast(t('aErr_offline'));return null;}let r;
  try{r=await rpc('mecca_create_order',{p_token:token,p_kind:kind,p_currency:CUR});}catch(_){toast(t('aErr_offline'));return null;}
  if(!r||r.error){if(r&&r.error==='auth'){logoutLocal();openAccount(t('needLogin'));}else toast(t('aErr_'+((r&&r.error)||'offline')));return null;}
  if(r.status==='beta_free')return r.id;
- try{const res=await fetch(SB_URL+'/functions/v1/mecca-paypal-checkout',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify({token,order:r.id,lang:LANG==='zh'?'zh':'en',origin:location.origin})});
+ try{const res=await fetch(SB_URL+'/functions/v1/mecca-stripe-checkout',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify({token,order:r.id,lang:LANG,origin:location.origin})});
   const j=await res.json();if(j&&j.url){store.set('pend',{id:r.id,kind,ts:Date.now()});location.href=j.url;return null;}}catch(_){}toast(t('payFail'));return null;}
 async function useOrder(id){let r;try{r=await rpc('mecca_use_order',{p_token:token,p_id:id});}catch(_){r={error:'offline'};}if(r&&r.user){me=r.user;setAcctBtn();}return r;}
 let resume=null;
 async function checkReturn(){const q=new URLSearchParams(location.search);const p=store.get('pend',null);if(!q.has('pay')&&!p)return;if(q.has('pay'))history.replaceState(null,'',location.pathname);
  if(!p||!token)return;if(q.get('pay')==='cancel'||Date.now()-p.ts>36e5){store.set('pend',null);if(q.get('pay')==='cancel')toast(t('payCancel'));return;}
- if(q.get('pay')==='ok'){toast(t('payWaiting'));try{await fetch(SB_URL+'/functions/v1/mecca-paypal-capture',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify({token,order:p.id})});}catch(_){}}
+ if(q.get('pay')==='ok'){toast(t('payWaiting'));try{await fetch(SB_URL+'/functions/v1/mecca-stripe-confirm',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify({token,order:p.id})});}catch(_){}}
  for(let i=0;i<12;i++){let s=null;try{s=await rpc('mecca_order_status',{p_token:token,p_id:p.id});}catch(_){}if(s==='paid'){store.set('pend',null);resume=p;toast(t('payDone'));return;}if(s==='used'||s==='failed'||s==null){store.set('pend',null);return;}await new Promise(r=>setTimeout(r,1500));}}
 const priceNote=()=>payOn?t('payNote'):t('betaFree');
 async function finishOrder(id,kind){const r=await useOrder(id);if(!r||r.error){toast(t('aErr_'+((r&&r.error)||'offline')));return;}
