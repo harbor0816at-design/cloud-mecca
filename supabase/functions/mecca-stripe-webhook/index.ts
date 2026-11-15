@@ -1,6 +1,6 @@
-// Stripe webhook (checkout.session.completed / async_payment_succeeded). Secret: STRIPE_WEBHOOK_SECRET.
+// Stripe webhook (checkout.session.completed / async_payment_succeeded). Secret: env STRIPE_WEBHOOK_SECRET, else Vault secret mecca_stripe_webhook_secret.
 const SB = Deno.env.get("SUPABASE_URL")!, SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const WH = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
+let WH = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 const rpc = async (fn: string, args: unknown) => {
   const r = await fetch(`${SB}/rest/v1/rpc/${fn}`, { method: "POST", headers: { apikey: SR, Authorization: `Bearer ${SR}`, "Content-Type": "application/json" }, body: JSON.stringify(args) });
   return r.ok ? r.json() : null;
@@ -16,6 +16,7 @@ async function verify(body: string, header: string) {
   return sigs.some((s) => s.length === hex.length && [...s].reduce((a, c, i) => a | (c.charCodeAt(0) ^ hex.charCodeAt(i)), 0) === 0);
 }
 Deno.serve(async (req) => {
+  if (!WH) WH = (await rpc("mecca_secret", { p_name: "mecca_stripe_webhook_secret" })) || "";
   if (!WH) return new Response("not configured", { status: 503 });
   const body = await req.text();
   if (!(await verify(body, req.headers.get("stripe-signature") || ""))) return new Response("bad signature", { status: 400 });

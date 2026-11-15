@@ -1,6 +1,6 @@
 // Called by the page after Stripe redirects back: checks the Checkout Session and marks the order paid.
 const SB = Deno.env.get("SUPABASE_URL")!, SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SK = Deno.env.get("STRIPE_SECRET_KEY") || "";
+let SK = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const rpc = async (fn: string, args: unknown) => {
@@ -10,6 +10,7 @@ const rpc = async (fn: string, args: unknown) => {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
+    if (!SK) SK = (await rpc("mecca_secret", { p_name: "mecca_stripe_secret_key" })) || "";
     if (!SK) return json({ error: "not_configured" }, 503);
     const { token, order } = await req.json();
     const ord = await rpc("mecca_pay_get", { p_token: token, p_id: order });

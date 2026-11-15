@@ -1,7 +1,7 @@
 // Creates a Stripe Checkout Session for a pending Cloud Mecca order and returns its URL.
-// Secrets: STRIPE_SECRET_KEY (required), ALLOWED_ORIGINS (optional, comma-separated).
+// Key: env STRIPE_SECRET_KEY, else Vault secret mecca_stripe_secret_key, ALLOWED_ORIGINS (optional, comma-separated).
 const SB = Deno.env.get("SUPABASE_URL")!, SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SK = Deno.env.get("STRIPE_SECRET_KEY") || "";
+let SK = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") || "https://cloud-mecca.vercel.app,http://localhost:3000,http://localhost:5173").split(",").map((s) => s.trim());
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
@@ -16,6 +16,7 @@ const NAMES: Record<string, Record<string, string>> = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
+    if (!SK) SK = (await rpc("mecca_secret", { p_name: "mecca_stripe_secret_key" })) || "";
     if (!SK) return json({ error: "not_configured" }, 503);
     const { token, order, lang, origin } = await req.json();
     const o = String(origin || "");
@@ -29,6 +30,7 @@ Deno.serve(async (req) => {
     f.set("line_items[0][price_data][currency]", ord.currency);
     f.set("line_items[0][price_data][unit_amount]", String(ord.amount_cents));
     f.set("line_items[0][price_data][product_data][name]", (NAMES[ord.kind] || NAMES.support)[L]);
+    f.set("line_items[0][price_data][product_data][tax_code]", "txcd_10701411"); // Electronically delivered information services, personal use (eligible for Managed Payments)
     f.set("success_url", `${o}/?pay=ok&sid={CHECKOUT_SESSION_ID}`);
     f.set("cancel_url", `${o}/?pay=cancel`);
     f.set("client_reference_id", ord.id);
