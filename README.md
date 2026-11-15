@@ -10,6 +10,10 @@
 - Tools: prayer times & qibla (`pt.js`, local), tasbih with live totals, du’a wall (moderated), Qur’an (AlQuran.cloud: Uthmani + al-Muyassar / 马坚).
 - Real photos: freely licensed Wikimedia Commons images mirrored into Supabase Storage (`mecca-media/photos/*`), credited in-app (`window.PHOTOS`).
 
+## Currencies & feedback
+- Prices live in `mecca_prices` (minor units) and are returned by `mecca_public_config`; the client shows a currency picker. Currencies: SAR, QAR (riyal) · AED, MAD (dirham) · DZD (dinar) · EGP, GBP (pound) · USD · EUR. KWD/BHD/OMR/JOD are not supported by the HK Stripe account.
+- Complaints & suggestions: `mecca_submit_feedback` → `mecca_feedback`; read and resolve them in `admin.html` (tab 投诉与建议).
+
 ## Files
 `index.html` (shell & styles) · `i18n.js` (ar/zh strings, Hajj stages, photo credits) · `pt.js` · `app.js` · `admin.html` (du’a moderation) · `privacy.html` · `sw.js`, `manifest.webmanifest`. Static, no build step.
 

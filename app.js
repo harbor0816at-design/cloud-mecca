@@ -16,10 +16,16 @@ document.querySelectorAll('[data-i18n]').forEach(el=>{el.innerHTML=t(el.dataset.
 const nf=n=>{try{return Number(n||0).toLocaleString(LOCALE);}catch(e){return String(n);}};
 function switchLang(){store.set('lang',AR?'zh':'ar');location.reload();}
 $('#langbtn').textContent=AR?'中':'ع';$('#langbtn').onclick=switchLang;$('#introLang').textContent=t('other');$('#introLang').onclick=switchLang;
+/* currencies: dinar, riyal, pound, dirham, dollar, euro (prices are decided by the server) */
+const CURS=window.CURRENCIES;const DEC3=['kwd','bhd','omr','jod'];
+let PRICES={hajj_course:{usd:990,eur:990,gbp:890,sar:3700,aed:3600,qar:3600,dzd:140000,egp:49000,mad:9900},support:{usd:100,eur:100,gbp:100,sar:400,aed:400,qar:400,dzd:15000,egp:5000,mad:1000}};
+const TZ_CUR={'Asia/Riyadh':'sar','Asia/Dubai':'aed','Asia/Qatar':'qar','Africa/Algiers':'dzd','Africa/Cairo':'egp','Africa/Casablanca':'mad','Europe/London':'gbp'};
 let CUR=store.get('cur',null);
-if(CUR!=='eur'&&CUR!=='usd'&&CUR!=='sar'){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}CUR=/^Europe\//.test(tz)?'eur':'usd';}
-function price(c){try{return new Intl.NumberFormat(LOCALE,{style:'currency',currency:CUR.toUpperCase(),minimumFractionDigits:c%100?2:0,maximumFractionDigits:2}).format(c/100);}catch(e){return (CUR==='eur'?'€':'$')+(c/100).toFixed(2);}}
-const PRICE={support:100,course:990};
+if(!CURS.some(c=>c[0]===CUR)){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}CUR=TZ_CUR[tz]||(/^Europe\//.test(tz)?'eur':'usd');}
+function price(kind){const m=(PRICES[kind]||{})[CUR];if(m==null)return'';const d=DEC3.includes(CUR)?3:2,v=m/Math.pow(10,d);try{return new Intl.NumberFormat(LOCALE,{style:'currency',currency:CUR.toUpperCase(),minimumFractionDigits:v%1?d:0,maximumFractionDigits:d}).format(v);}catch(e){return v.toFixed(d)+' '+CUR.toUpperCase();}}
+const curName=c=>{const x=CURS.find(y=>y[0]===c);return x?(AR?x[1]:x[2]):c.toUpperCase();};
+function curPicker(id){return`<select class="field" id="${id||'cur'}" style="width:auto;min-width:170px;display:inline-block">${CURS.map(c=>`<option value="${c[0]}" ${c[0]===CUR?'selected':''}>${AR?c[1]:c[2]} · ${c[0].toUpperCase()}</option>`).join('')}</select>`;}
+function bindCur(root,id,onChange){const el=root.querySelector('#'+(id||'cur'));if(el)el.onchange=()=>{CUR=el.value;store.set('cur',CUR);onChange&&onChange();};}
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;if(isTouch)document.body.classList.add('touch');
 const photoURL=(slug,w)=>window.PHOTO_BASE+slug+'-'+(w||800)+'.jpg';
 const ST=window.STEP_TEXT[LANG],STEPS=window.STEPS,SM=window.STEP_META;
@@ -36,7 +42,7 @@ function myName(){return me&&me.show_name?me.name:null;}
 function setAcctBtn(){const b=$('#acctbtn');b.textContent=me?(me.name||'?').slice(0,1).toUpperCase():'👤';b.classList.toggle('in',!!me);}
 function logoutLocal(){token=null;me=null;store.set('tok',null);setAcctBtn();retrack();}
 async function loadMe(){if(!token||!sb){setAcctBtn();return;}try{const u=await rpc('mecca_me',{p_token:token});if(u){me=u;}else logoutLocal();}catch(e){}setAcctBtn();retrack();}
-async function loadConfig(){if(!sb)return;try{const c=await rpc('mecca_public_config');payOn=!!(c&&c.payments);}catch(e){}}
+async function loadConfig(){if(!sb)return;try{const c=await rpc('mecca_public_config');payOn=!!(c&&c.payments);if(c&&c.prices)PRICES=c.prices;}catch(e){}}
 
 /* ---------- location & prayer settings ---------- */
 const PT=window.PT;
@@ -471,9 +477,9 @@ function openProfile(){const u=me;const st=[t('statDhikr',{n:nf(u.dhikr)}),t('st
  openSheet(t('acctT'),`<div class="p" dir="ltr" style="text-align:start">${esc(u.email)}</div><div>${st.map(s=>`<span class="chip">${s}</span>`).join('')}${u.hajj_course?`<span class="chip on">🕋 ${t('fullHave')}</span>`:''}</div>
   <label class="lbl">${t('dname')}</label><input class="field" id="pn" maxlength="24" value="${esc(u.name)}"><label class="chk"><input type="checkbox" id="ps" ${u.show_name?'checked':''}> ${t('showName')}</label>
   <label class="chk"><input type="checkbox" id="pv" ${store.get('vib',true)?'checked':''}> ${t('vibrate')}</label>
-  <label class="lbl">${t('currency')}</label><div class="row" style="justify-content:flex-start">${['eur','usd'].map(c=>`<button class="btn ${CUR===c?'pri':''}" data-c="${c}">${c.toUpperCase()}</button>`).join('')}</div>
+  <label class="lbl">${t('currency')}</label>${curPicker('pcur')}
   <div class="row"><button class="btn pri" id="psave">${t('saveBtn')}</button><button class="btn" id="pout">${t('logout')}</button></div>`,root=>{
-  root.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{CUR=b.dataset.c;store.set('cur',CUR);root.querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('pri',x===b));});
+  bindCur(root,'pcur');
   root.querySelector('#pv').onchange=e=>store.set('vib',e.target.checked);
   root.querySelector('#psave').onclick=async()=>{let r;try{r=await rpc('mecca_update_profile',{p_token:token,p_name:root.querySelector('#pn').value.trim(),p_show_name:root.querySelector('#ps').checked,p_lang:LANG==='zh'?'zh':'en'});}catch(_){r={error:'offline'};}
    if(r&&r.user){me=r.user;setAcctBtn();retrack();toast(t('saved'));}else{if(r&&r.error==='auth')logoutLocal();toast(t('aErr_'+((r&&r.error)||'offline')));}};
@@ -496,8 +502,20 @@ async function checkReturn(){const q=new URLSearchParams(location.search);const 
 const priceNote=()=>payOn?t('payNote'):t('betaFree');
 async function finishOrder(id,kind){const r=await useOrder(id);if(!r||r.error){toast(t('aErr_'+((r&&r.error)||'offline')));return;}
  if(kind==='support'){chime(783.99,.25);openSheet(t('supportT'),`<div class="big2">🤍 ${t('supportThanks')}</div><div class="row"><button class="btn" id="x">${t('close')}</button></div>`,r2=>{r2.querySelector('#x').onclick=closeSheet;});}else startFull(true);}
-function openSupport(){openSheet(t('supportT'),`<div class="p">${t('supportP')}</div><div class="row"><button class="btn pri" id="sp">${t('supportBtn',{p:price(PRICE.support)})}</button></div><div class="note">${t('supportNote')}<br>${priceNote()}</div>`,root=>{
+function openSupport(){openSheet(t('supportT'),`<div class="p">${t('supportP')}</div><label class="lbl">${t('currency')}</label>${curPicker()}<div class="row"><button class="btn pri" id="sp">${t('supportBtn',{p:price('support')})}</button></div><div class="note">${t('supportNote')}<br>${priceNote()}</div>`,root=>{bindCur(root,null,openSupport);
  root.querySelector('#sp').onclick=()=>requireLogin(async()=>{const id=await buy('support');if(id)finishOrder(id,'support');});});}
+
+/* ---------- complaints & suggestions ---------- */
+function openFeedback(){let kind='suggestion';
+ openSheet(t('fbT'),`<div class="p">${t('fbP')}</div><div class="chips" id="fk">${['complaint','suggestion','bug','other'].map(k=>`<span class="chip ${k===kind?'on':''}" data-k="${k}">${t('fb_'+k)}</span>`).join('')}</div>
+  <textarea class="field" id="fb" maxlength="1000" placeholder="${t('fbPh')}" style="margin-top:10px;min-height:120px"></textarea><div class="small" id="fbn" style="text-align:end">0 / 1000</div>
+  <input class="field" id="fc" maxlength="120" dir="ltr" placeholder="${t('fbContact')}" style="margin-top:8px" value="${me?esc(me.email):''}">
+  <div class="row"><button class="btn pri" id="fs">${t('fbSend')}</button></div><div class="note">${t('fbNote')}</div>`,root=>{
+  root.querySelectorAll('[data-k]').forEach(c=>c.onclick=()=>{kind=c.dataset.k;root.querySelectorAll('[data-k]').forEach(x=>x.classList.toggle('on',x===c));});
+  const ta=root.querySelector('#fb');ta.oninput=()=>{root.querySelector('#fbn').textContent=nf(ta.value.length)+' / '+nf(1000);};
+  root.querySelector('#fs').onclick=async()=>{const v=ta.value.trim();if(v.length<5){toast(t('moreWords'));return;}const btn=root.querySelector('#fs');btn.disabled=true;let r='offline';
+   try{r=await rpc('mecca_submit_feedback',{p_token:token,p_kind:kind,p_body:v,p_contact:root.querySelector('#fc').value.trim(),p_lang:LANG,p_page:cur?cur.id:'intro'});}catch(_){}
+   btn.disabled=false;if(r==='ok'){openSheet(t('fbT'),`<div class="big2">✓ ${t('fbOk')}</div><div class="row"><button class="btn" id="x">${t('close')}</button></div>`,r2=>{r2.querySelector('#x').onclick=closeSheet;});}else toast(DICT['fbErr_'+r]?t('fbErr_'+r):t('eRes_fail'));};});}
 
 /* ---------- du'a wall ---------- */
 function openWall(){const mine=store.get('wall',[]);const amined=store.get('amined',{});const reported=store.get('reported',{});let items=[],state=sb?'loading':'offline';
@@ -549,10 +567,10 @@ function stepHead(id,i){const m=SM[id],x=ST[id];return`<div class="stephead">${m
 function openJourney(){const have=me&&me.hajj_course;const prog=store.get('jprog',0);
  openSheet(t('jT'),`<div class="p">${t('jP')}</div>
   ${STEPS.map((id,i)=>`<button class="card" data-s="${id}" style="display:flex;gap:10px;align-items:center;width:100%;text-align:start;cursor:pointer"><span class="chip ${i<prog?'on':''}" style="margin:0">${nf(i+1)}</span><span><small style="color:var(--muted)">${esc(ST[id].d)}</small><br><b>${esc(ST[id].t)}</b></span></button>`).join('')}
-  <div class="sec">${have?t('fullHave'):t('fullBuy',{p:price(PRICE.course)})}</div>${have?'':`<ul class="st">${(DICT.fullInc||[]).map(x=>`<li>${x}</li>`).join('')}</ul>`}
-  <div class="row"><button class="btn pri" id="full">${have?t('fullOpen'):t('fullBuy',{p:price(PRICE.course)})}</button><button class="btn" id="req">📋 ${t('tReq')}</button></div>
+  <div class="sec">${have?t('fullHave'):t('fullBuy',{p:price('hajj_course')})}</div>${have?'':`<ul class="st">${(DICT.fullInc||[]).map(x=>`<li>${x}</li>`).join('')}</ul><label class="lbl">${t('currency')}</label>${curPicker()}`}
+  <div class="row"><button class="btn pri" id="full">${have?t('fullOpen'):t('fullBuy',{p:price('hajj_course')})}</button><button class="btn" id="req">📋 ${t('tReq')}</button></div>
   <div class="note">${t('freeNote')}${have?'':'<br>'+priceNote()}<br>${t('disclaimer')}</div>`,root=>{
-  root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openStep(b.dataset.s,false));root.querySelector('#req').onclick=openReq;
+  root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openStep(b.dataset.s,false));root.querySelector('#req').onclick=openReq;bindCur(root,null,()=>{const sc=$('#sheetBody').scrollTop;openJourney();$('#sheetBody').scrollTop=sc;});
   root.querySelector('#full').onclick=()=>{if(me&&me.hajj_course){startFull(false);return;}requireLogin(async()=>{if(me.hajj_course){startFull(false);return;}const id=await buy('hajj_course');if(id)finishOrder(id,'hajj_course');});};});}
 function startFull(fresh){let i=fresh?0:store.get('jprog',0);if(i>=STEPS.length)i=0;openStep(STEPS[i],true);}
 function stopAuto(){if(auto){auto=null;if(P.mode==='auto')P.mode='walk';}}
@@ -631,13 +649,13 @@ const SCENES=['haram','mina','arafat','muzdalifah','jamarat'];const scName=id=>t
 const PLACE_KEYS={gate:'pGate',kaaba:'pKaaba',stone:'pStone',maqam:'pMaqam',rows:'pRows',safa:'pSafa',marwa:'pMarwa',sughra:'lblSughra',wusta:'lblWusta',aqabah:'lblAqabah'};
 function openMenu(){const S=cur;openSheet(t('menuT'),`<div class="sec" style="margin-top:0">${t('scenesT')}</div><div class="tele">${SCENES.map(id=>`<button class="btn ${S&&S.id===id?'pri':''}" data-sc="${id}">${scName(id)}</button>`).join('')}</div>
  ${S&&S.menu&&S.menu.length>1?`<div class="sec">${t('goT')} · ${scName(S.id)}</div><div class="tele">${S.menu.map(k=>`<button class="btn" data-pl="${k}">${t(PLACE_KEYS[k]||'pGate')}</button>`).join('')}</div>`:''}
- <div class="sec">${t('toolsH')}</div><div class="tele"><button class="btn" data-go="req">📋 ${t('tReq')}</button><button class="btn" data-go="gallery">🖼 ${t('tGallery')}</button><button class="btn" data-go="journey">🕋 ${t('jT')}</button><button class="btn" data-go="support">🤍 ${t('support')}</button></div>
+ <div class="sec">${t('toolsH')}</div><div class="tele"><button class="btn" data-go="req">📋 ${t('tReq')}</button><button class="btn" data-go="gallery">🖼 ${t('tGallery')}</button><button class="btn" data-go="journey">🕋 ${t('jT')}</button><button class="btn" data-go="support">🤍 ${t('support')}</button><button class="btn" data-go="feedback">✉️ ${t('fbT')}</button></div>
  <div class="sec">${t('mSettings')}</div><div class="row" style="justify-content:flex-start"><button class="btn" id="mlang">🌐 ${t('other')}</button><button class="btn" id="mamb">🔊 ${t('mAmbient')} · ${audioOn?t('mOn'):t('mOff')}</button></div>
  <div class="note"><a href="/privacy.html">${t('privacy')}</a><br>${t('disclaimer')}</div>`,root=>{
  root.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>goScene(b.dataset.sc,'spawn'));root.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>goScene(S.id,b.dataset.pl));
  root.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goDo(b.dataset.go));root.querySelector('#mlang').onclick=switchLang;root.querySelector('#mamb').onclick=()=>{setAudio(!audioOn);store.set('amb',audioOn);openMenu();};});}
 $('#menubtn').onclick=openMenu;
-function goDo(kind){if(kind==='journey')return openJourney();if(kind==='salah')return openSalah();if(kind==='tasbih')return openTasbih();if(kind==='wall')return openWall();if(kind==='quran')return openQuran();if(kind==='req')return openReq();if(kind==='gallery')return openGallery();if(kind==='support')return openSupport();}
+function goDo(kind){if(kind==='feedback')return openFeedback();if(kind==='journey')return openJourney();if(kind==='salah')return openSalah();if(kind==='tasbih')return openTasbih();if(kind==='wall')return openWall();if(kind==='quran')return openQuran();if(kind==='req')return openReq();if(kind==='gallery')return openGallery();if(kind==='support')return openSupport();}
 document.querySelectorAll('#dock [data-go]').forEach(b=>b.onclick=e=>{e.stopPropagation();goDo(b.dataset.go);});
 
 /* ---------- audio: soft wind/crowd murmur (no music) + gentle chimes ---------- */

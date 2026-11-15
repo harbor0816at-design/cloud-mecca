@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>杜阿墙审核 · 云上麦加</title>
+<title>后台 · 云上麦加</title>
 <style>
 body{margin:0;background:#06110f;color:#efe4d0;font-family:-apple-system,"PingFang SC","Noto Sans SC",sans-serif}
 main{max-width:720px;margin:0 auto;padding:24px 16px 60px}
@@ -23,9 +23,11 @@ button.on{background:#d8b25e;color:#1b120a;border-color:#d8b25e}
 </head>
 <body>
 <main>
-<h1>杜阿墙审核 · 云上麦加</h1>
+<h1>后台 · 云上麦加</h1>
 <div class="bar"><input id="key" type="password" placeholder="管理密钥"><button id="save">保存并载入</button></div>
+<div class="bar"><button data-v="wall" class="on">杜阿墙审核</button><button data-v="fb">投诉与建议</button></div>
 <div class="bar" id="tabs"><button data-s="pending" class="on">待审核</button><button data-s="approved">已公开</button><button data-s="hidden">已隐藏</button><button id="refresh">刷新</button></div>
+<div class="bar" id="ftabs" style="display:none"><button data-f="new" class="on">未读</button><button data-f="read">已读</button><button data-f="done">已处理</button><button data-f="all">全部</button><button id="frefresh">刷新</button></div>
 <div id="msg"></div>
 <div id="list"></div>
 </main>
@@ -43,8 +45,18 @@ async function load(){if(!key){$('#msg').textContent='请输入管理密钥';ret
    ${status!=='approved'?`<button class="ok" data-a="approved" data-id="${r.id}">公开</button>`:''}${status!=='hidden'?`<button data-a="hidden" data-id="${r.id}">隐藏</button>`:''}<button class="no" data-a="delete" data-id="${r.id}">删除</button></div></div>`).join('')||'<p style="color:#8f7f68">没有内容</p>';
   document.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{if(b.dataset.a==='delete'&&!window.confirm('确定永久删除？'))return;b.disabled=true;try{await rpc('mecca_admin_set',{p_key:key,p_id:b.dataset.id,p_status:b.dataset.a});b.closest('.card').remove();}catch(e){$('#msg').textContent='操作失败：'+e.message;b.disabled=false;}});
  }catch(e){$('#msg').textContent=e.message==='forbidden'?'密钥不正确':'载入失败：'+e.message;$('#list').innerHTML='';}}
-$('#save').onclick=()=>{key=$('#key').value.trim();try{localStorage.setItem('mecca_admin',key);}catch(e){}load();};
+$('#save').onclick=()=>{key=$('#key').value.trim();try{localStorage.setItem('mecca_admin',key);}catch(e){}view==='fb'?loadFb():load();};
 $('#refresh').onclick=load;
+let view='wall',fst='new';const KIND={complaint:'投诉',suggestion:'建议',bug:'技术问题',other:'其他'};
+async function loadFb(){if(!key){$('#msg').textContent='请输入管理密钥';return;}$('#msg').textContent='载入中…';
+ try{const rows=await rpc('mecca_admin_feedback',{p_key:key,p_status:fst});$('#msg').textContent=`共 ${rows.length} 条`;
+  $('#list').innerHTML=rows.map(r=>`<div class="card"><div class="m"><b style="color:#f1d693">${KIND[r.kind]||r.kind}</b> · ${new Date(r.created_at).toLocaleString()} · ${esc(r.lang||'')} · ${esc(r.page||'')}${r.user_email?' · 账号 '+esc(r.user_email):''}</div><div class="t">${esc(r.body)}</div>${r.contact?`<div class="m">联系方式：${esc(r.contact)}</div>`:''}<div class="a">
+   ${r.status!=='read'?`<button data-fa="read" data-id="${r.id}">标为已读</button>`:''}${r.status!=='done'?`<button class="ok" data-fa="done" data-id="${r.id}">已处理</button>`:''}<button class="no" data-fa="delete" data-id="${r.id}">删除</button></div></div>`).join('')||'<p style="color:#8f7f68">没有内容</p>';
+  document.querySelectorAll('[data-fa]').forEach(b=>b.onclick=async()=>{if(b.dataset.fa==='delete'&&!window.confirm('确定永久删除？'))return;b.disabled=true;try{await rpc('mecca_admin_feedback_set',{p_key:key,p_id:b.dataset.id,p_status:b.dataset.fa});if(fst!=='all')b.closest('.card').remove();else loadFb();}catch(e){$('#msg').textContent='操作失败：'+e.message;b.disabled=false;}});
+ }catch(e){$('#msg').textContent=e.message==='forbidden'?'密钥不正确':'载入失败：'+e.message;$('#list').innerHTML='';}}
+$('#frefresh').onclick=loadFb;
+document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{fst=b.dataset.f;document.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));loadFb();});
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('on',x===b));$('#tabs').style.display=view==='wall'?'':'none';$('#ftabs').style.display=view==='fb'?'':'none';view==='wall'?load():loadFb();});
 document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{status=b.dataset.s;document.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on',x===b));load();});
 load();
 </script>
