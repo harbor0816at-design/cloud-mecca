@@ -38,6 +38,7 @@ try{if(window.supabase&&window.supabase.createClient)sb=window.supabase.createCl
 async function rpc(fn,args){if(!sb)throw new Error('offline');const r=await sb.rpc(fn,args||{});if(r.error)throw r.error;return r.data;}
 const myId=(()=>{let id=null;try{id=sessionStorage.getItem('mecca_id');}catch(e){}if(!id){id=Math.random().toString(36).slice(2,10);try{sessionStorage.setItem('mecca_id',id);}catch(e){}}return id;})();
 let token=store.get('tok',null),me=null,payOn=false;
+const OT=(n,p)=>{try{if(window.OpsTrack)window.OpsTrack.track(n,p);}catch(_){}};
 function myName(){return me&&me.show_name?me.name:null;}
 function setAcctBtn(){const b=$('#acctbtn');b.textContent=me?(me.name||'?').slice(0,1).toUpperCase():'👤';b.classList.toggle('in',!!me);}
 function logoutLocal(){token=null;me=null;store.set('tok',null);setAcctBtn();retrack();}
@@ -414,7 +415,7 @@ const INFO={kaaba:['kaabaT','kaabaP','kaabaNote'],masa:['masaT','masaP'],mina:['
 function info(k){const[a,b,c]=INFO[k];openSheet(t(a),`<div class="p">${t(b)}</div>${c?`<div class="note">${t(c)}</div>`:''}<div class="row"><button class="btn pri" id="ij">🕋 ${t('jT')}</button></div><div class="note">${t('disclaimer')}</div>`,r=>{r.querySelector('#ij').onclick=openJourney;});}
 
 /* ---------- prayer times & qibla ---------- */
-function openSalah(){let heading=null,compassOn=false,handler=null;
+function openSalah(){OT('open_salah');let heading=null,compassOn=false,handler=null;
  const render=root=>{const now=new Date();const np=nextPrayer();const day=np&&np.today?np.today:PT.day(loc,now,METHOD,ASR);const hj=PT.hijri(now,LANG);const q=PT.qibla(loc.lat,loc.lng);
   const rows=['fajr','sunrise','dhuhr','asr','maghrib','isha'].map(k=>`<tr class="${np&&np.key===k&&day&&np.at===day[k]?'nx':''}${k==='sunrise'?' sr':''}"><td>${t(k)}</td><td>${day?fmtT(day[k]):'—'}</td></tr>`).join('');
   root.innerHTML=`<div class="small">${esc(hj.text)}${hj.month===9?` · ${t('hijriRamadan')}`:''} · ${esc(loc.name)}</div>
@@ -447,7 +448,7 @@ function queueDhikr(k){pend[k]=(pend[k]||0)+1;pendN++;todayAll++;if(!flushT)flus
 async function flushDhikr(){clearTimeout(flushT);flushT=null;const p=pend;pend={};pendN=0;for(const k in p){let r=null;try{r=await rpc('mecca_add_dhikr',{p_token:token,p_phrase:k,p_n:p[k],p_group:false});}catch(_){}if(r){let s=0;for(const x in r)s+=+r[x]||0;todayAll=Math.max(todayAll,s);}}
  if(me)me.dhikr=(me.dhikr||0)+Object.values(p).reduce((a,b)=>a+b,0);dhikrListeners.forEach(f=>f());}
 function refreshToday(){if(!sb)return;rpc('mecca_dhikr_today').then(r=>{let s=0;for(const x in r||{})s+=+r[x]||0;todayAll=Math.max(todayAll,s);dhikrListeners.forEach(f=>f());}).catch(()=>{});}
-function openTasbih(mode){refreshToday();let md=mode||'free',phrase='subhanallah',count=0,seq=0;const vib=store.get('vib',true);
+function openTasbih(mode){OT('open_tasbih');refreshToday();let md=mode||'free',phrase='subhanallah',count=0,seq=0;const vib=store.get('vib',true);
  openSheet(t('tasbihT'),`<div class="p">${t('tasbihP')}</div><div id="tz"></div>`,root=>{const el=root.querySelector('#tz');
   const curK=()=>md==='after'?AFTER[seq][0]:phrase,target=()=>md==='after'?AFTER[seq][1]:33;
   const tot=()=>{const e=el.querySelector('#tot');if(!e)return;const parts=[t('todayAll',{n:nf(todayAll)})];if(me)parts.push(t('mine',{n:nf((me.dhikr||0)+pendN)}));e.innerHTML=parts.join('<br>');};
@@ -463,7 +464,7 @@ function openTasbih(mode){refreshToday();let md=mode||'free',phrase='subhanallah
 
 /* ---------- accounts ---------- */
 function requireLogin(after){if(me){after();return;}openAccount(t('needLogin'),after);}
-function openAccount(reason,after){if(me){openProfile();return;}let mode='login',email='';
+function openAccount(reason,after){OT('account_open',{reason:String(reason||'')});if(me){openProfile();return;}let mode='login',email='';
  const render=root=>{root.innerHTML=`${reason?`<div class="p">${reason}</div>`:''}<div class="tabs"><button data-m="login" class="${mode==='login'?'on':''}">${t('login')}</button><button data-m="register" class="${mode==='register'?'on':''}">${t('register')}</button></div>
   <input class="field" id="ae" type="email" dir="ltr" autocomplete="email" placeholder="${t('email')}" value="${esc(email)}">${mode==='register'?`<input class="field" id="an" maxlength="24" placeholder="${t('dname')}" style="margin-top:8px">`:''}
   <input class="field" id="ap" type="password" dir="ltr" autocomplete="${mode==='login'?'current-password':'new-password'}" placeholder="${t('password')}" style="margin-top:8px">
@@ -487,7 +488,7 @@ function openProfile(){const u=me;const st=[t('statDhikr',{n:nf(u.dhikr)}),t('st
 $('#acctbtn').onclick=()=>openAccount();
 
 /* ---------- payments (Stripe Checkout; free during beta) ---------- */
-async function buy(kind){if(!sb){toast(t('aErr_offline'));return null;}let r;
+async function buy(kind){OT('checkout_click',{plan:kind});if(!sb){toast(t('aErr_offline'));return null;}let r;
  try{r=await rpc('mecca_create_order',{p_token:token,p_kind:kind,p_currency:CUR});}catch(_){toast(t('aErr_offline'));return null;}
  if(!r||r.error){if(r&&r.error==='auth'){logoutLocal();openAccount(t('needLogin'));}else toast(t('aErr_'+((r&&r.error)||'offline')));return null;}
  if(r.status==='beta_free')return r.id;
@@ -502,11 +503,11 @@ async function checkReturn(){const q=new URLSearchParams(location.search);const 
 const priceNote=()=>payOn?t('payNote'):t('betaFree');
 async function finishOrder(id,kind){const r=await useOrder(id);if(!r||r.error){toast(t('aErr_'+((r&&r.error)||'offline')));return;}
  if(kind==='support'){chime(783.99,.25);openSheet(t('supportT'),`<div class="big2">🤍 ${t('supportThanks')}</div><div class="row"><button class="btn" id="x">${t('close')}</button></div>`,r2=>{r2.querySelector('#x').onclick=closeSheet;});}else startFull(true);}
-function openSupport(){openSheet(t('supportT'),`<div class="p">${t('supportP')}</div><label class="lbl">${t('currency')}</label>${curPicker()}<div class="row"><button class="btn pri" id="sp">${t('supportBtn',{p:price('support')})}</button></div><div class="note">${t('supportNote')}<br>${priceNote()}</div>`,root=>{bindCur(root,null,openSupport);
+function openSupport(){OT('pricing_view',{plan:'support'});openSheet(t('supportT'),`<div class="p">${t('supportP')}</div><label class="lbl">${t('currency')}</label>${curPicker()}<div class="row"><button class="btn pri" id="sp">${t('supportBtn',{p:price('support')})}</button></div><div class="note">${t('supportNote')}<br>${priceNote()}</div>`,root=>{bindCur(root,null,openSupport);
  root.querySelector('#sp').onclick=()=>requireLogin(async()=>{const id=await buy('support');if(id)finishOrder(id,'support');});});}
 
 /* ---------- complaints & suggestions ---------- */
-function openFeedback(){let kind='suggestion';
+function openFeedback(){OT('feedback_open');let kind='suggestion';
  openSheet(t('fbT'),`<div class="p">${t('fbP')}</div><div class="chips" id="fk">${['complaint','suggestion','bug','other'].map(k=>`<span class="chip ${k===kind?'on':''}" data-k="${k}">${t('fb_'+k)}</span>`).join('')}</div>
   <textarea class="field" id="fb" maxlength="1000" placeholder="${t('fbPh')}" style="margin-top:10px;min-height:120px"></textarea><div class="small" id="fbn" style="text-align:end">0 / 1000</div>
   <input class="field" id="fc" maxlength="120" dir="ltr" placeholder="${t('fbContact')}" style="margin-top:8px" value="${me?esc(me.email):''}">
@@ -518,7 +519,7 @@ function openFeedback(){let kind='suggestion';
    btn.disabled=false;if(r==='ok'){openSheet(t('fbT'),`<div class="big2">✓ ${t('fbOk')}</div><div class="row"><button class="btn" id="x">${t('close')}</button></div>`,r2=>{r2.querySelector('#x').onclick=closeSheet;});}else toast(DICT['fbErr_'+r]?t('fbErr_'+r):t('eRes_fail'));};});}
 
 /* ---------- du'a wall ---------- */
-function openWall(){const mine=store.get('wall',[]);const amined=store.get('amined',{});const reported=store.get('reported',{});let items=[],state=sb?'loading':'offline';
+function openWall(){OT('open_wall');const mine=store.get('wall',[]);const amined=store.get('amined',{});const reported=store.get('reported',{});let items=[],state=sb?'loading':'offline';
  const draw=root=>{const bx=root.querySelector('#cards');let h='';
   mine.forEach(c=>{h+=`<div class="card"><div class="t">${esc(c.t)}</div><div class="m"><span>${t('yourReq')}<span class="tag">${t('reviewing')}</span></span><span>${new Date(c.at).toLocaleDateString(LOCALE)}</span></div></div>`;});
   if(state==='loading')h+=`<div class="small" style="padding:14px">${t('wallLoading')}</div>`;else if(state==='offline')h+=`<div class="small" style="padding:14px">${t('wallOffline')}</div>`;else if(!items.length)h+=`<div class="small" style="padding:14px">${t('wallEmpty')}</div>`;
@@ -535,7 +536,7 @@ function openWall(){const mine=store.get('wall',[]);const amined=store.get('amin
 const QAPI='https://api.alquran.cloud/v1',QTR=AR?'ar.muyassar':'zh.majian';const qcache=new Map();
 async function qget(path){if(qcache.has(path))return qcache.get(path);const r=await fetch(QAPI+path);if(!r.ok)throw new Error(r.status);const j=await r.json();if(!j||j.code!==200)throw new Error('bad');qcache.set(path,j.data);return j.data;}
 const dayIdx=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);let ayahOff=0;
-function openQuran(tab){tab=tab||'daily';let surahs=null,filter='';
+function openQuran(tab){OT('open_quran',{tab:tab||'daily'});tab=tab||'daily';let surahs=null,filter='';
  openSheet(t('quranT'),`<div class="tabs"><button data-t="daily">${t('qDaily')}</button><button data-t="read">${t('qRead')}</button></div><div id="qz"></div><div class="note">${t('qSrc')} · <a href="https://quran.com" target="_blank" rel="noopener">${t('qOpen')}</a></div>`,root=>{
   const qz=root.querySelector('#qz');let alive=true;
   const fail=retry=>{qz.innerHTML=`<div class="small" style="padding:14px">${t('qFail')}</div><div class="row"><button class="btn" id="rt">${t('qRetry')}</button></div>`;qz.querySelector('#rt').onclick=retry;};
@@ -556,15 +557,15 @@ function openQuran(tab){tab=tab||'daily';let surahs=null,filter='';
   root.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{setTab(b.dataset.t);b.dataset.t==='daily'?daily():list();});setTab(tab);tab==='daily'?daily():list();return()=>{alive=false;};});}
 
 /* ---------- requirements & photos ---------- */
-function openReq(){const D=DICT.reqSec||window.I18N.ar.reqSec;openSheet(t('reqT'),`<div class="stephead"><img src="${photoURL('supplicating',800)}" alt="" onerror="this.remove()"><div><b>${t('reqT')}</b></div></div><div class="note" style="border:none;margin-top:0;padding-top:0">${t('reqNote')}</div>
+function openReq(){OT('open_req');const D=DICT.reqSec||window.I18N.ar.reqSec;openSheet(t('reqT'),`<div class="stephead"><img src="${photoURL('supplicating',800)}" alt="" onerror="this.remove()"><div><b>${t('reqT')}</b></div></div><div class="note" style="border:none;margin-top:0;padding-top:0">${t('reqNote')}</div>
  ${D.map(([h,list])=>`<div class="sec">${h}</div><ul class="st">${list.map(x=>`<li>${x}</li>`).join('')}</ul>`).join('')}
  <div class="sec">${t('typeH')}</div><ul class="st"><li>${t('typeTam')}</li><li>${t('typeQir')}</li><li>${t('typeIfr')}</li></ul>
  <div class="note"><b>${t('reqSrc')}</b><br>${window.REQ_SOURCES.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener" dir="ltr">${esc(n)}</a>`).join('<br>')}<br><br>${t('disclaimer')}</div>`);}
-function openGallery(){openSheet(t('galT'),`<div class="p">${t('galNote')}</div><div class="gal">${Object.keys(window.PHOTOS).map(k=>{const P=window.PHOTOS[k];return`<img loading="lazy" src="${photoURL(k,800)}" alt="${esc(P[LANG])}"><div class="cap">${esc(P[LANG])}</div><div class="cr">📷 <a href="${P.p}" target="_blank" rel="noopener">${esc(P.a)}</a> · ${P.lu?`<a href="${P.lu}" target="_blank" rel="noopener">${esc(P.l)}</a>`:esc(P.l)} · Wikimedia Commons</div>`;}).join('')}</div>`);}
+function openGallery(){OT('open_gallery');openSheet(t('galT'),`<div class="p">${t('galNote')}</div><div class="gal">${Object.keys(window.PHOTOS).map(k=>{const P=window.PHOTOS[k];return`<img loading="lazy" src="${photoURL(k,800)}" alt="${esc(P[LANG])}"><div class="cap">${esc(P[LANG])}</div><div class="cr">📷 <a href="${P.p}" target="_blank" rel="noopener">${esc(P.a)}</a> · ${P.lu?`<a href="${P.lu}" target="_blank" rel="noopener">${esc(P.l)}</a>`:esc(P.l)} · Wikimedia Commons</div>`;}).join('')}</div>`);}
 
 /* ---------- Hajj journey ---------- */
 function stepHead(id,i){const m=SM[id],x=ST[id];return`<div class="stephead">${m.photo?`<img src="${photoURL(m.photo,800)}" alt="" onerror="this.remove()">`:''}<div><small>${t('stepN',{n:nf(i+1),m:nf(STEPS.length)})} · ${esc(x.d)}</small><b>${esc(x.t)}</b></div></div>`;}
-function openJourney(){const have=me&&me.hajj_course;const prog=store.get('jprog',0);
+function openJourney(){OT('open_journey',{paid:!!(me&&me.hajj_course)});if(!(me&&me.hajj_course))OT('pricing_view',{plan:'hajj_course'});const have=me&&me.hajj_course;const prog=store.get('jprog',0);
  openSheet(t('jT'),`<div class="p">${t('jP')}</div>
   ${STEPS.map((id,i)=>`<button class="card" data-s="${id}" style="display:flex;gap:10px;align-items:center;width:100%;text-align:start;cursor:pointer"><span class="chip ${i<prog?'on':''}" style="margin:0">${nf(i+1)}</span><span><small style="color:var(--muted)">${esc(ST[id].d)}</small><br><b>${esc(ST[id].t)}</b></span></button>`).join('')}
   <div class="sec">${have?t('fullHave'):t('fullBuy',{p:price('hajj_course')})}</div>${have?'':`<ul class="st">${(DICT.fullInc||[]).map(x=>`<li>${x}</li>`).join('')}</ul><label class="lbl">${t('currency')}</label>${curPicker()}`}
@@ -577,7 +578,7 @@ function stopAuto(){if(auto){auto=null;if(P.mode==='auto')P.mode='walk';}}
 function startAuto(fn,dur,onStep,done){P.mode='auto';auto={fn,dur,t:0,speed:1,onStep,done};}
 function tawafPos(k){const a=-Math.PI/4+k*Math.PI*14;return{x:TAWAF_R*Math.cos(a),z:-TAWAF_R*Math.sin(a),yaw:a+.45};}
 function saiPos(k){const leg=Math.min(6,Math.floor(k*7)),f=k*7-leg,go=leg%2===0,a=MASA.safa+6,b=MASA.marwa-6;return{x:go?67:69,z:go?a+(b-a)*f:b-(b-a)*f,yaw:go?Math.PI:0,leg};}
-function openStep(id,full){const i=STEPS.indexOf(id),m=SM[id],x=ST[id];let done=!m.interact||m.interact==='talbiyah';
+function openStep(id,full){OT('course_lesson_view',{lesson:id});const i=STEPS.indexOf(id),m=SM[id],x=ST[id];let done=!m.interact||m.interact==='talbiyah';
  const go=cb=>{if(cur&&cur.id===m.scene&&!full){cb&&cb();return;}goScene(m.scene,m.at,cb,true);};
  const nav=()=>full?`<div class="row">${i>0?`<button class="btn" id="pv">${t('back')}</button>`:''}<button class="btn pri" id="nx" ${done?'':'disabled'}>${i<STEPS.length-1?t('cont'):t('done')}</button></div>`:`<div class="row"><button class="btn" id="gs">📍 ${t('goScene')}</button><button class="btn" id="jl">🕋 ${t('jT')}</button></div>`;
  openSheet(full?t('jT'):x.t,`${full?`<div class="steps">${STEPS.map((s,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>`:''}${stepHead(id,i)}<div class="p">${esc(x.p)}</div><div class="sec">${t('keyPoints')}</div><ul class="st">${x.k.map(s=>`<li>${esc(s)}</li>`).join('')}</ul><div id="ia"></div><div id="nv"></div><div class="note">${t('disclaimer')}</div>`,root=>{
@@ -629,7 +630,7 @@ function openStoning(jk,opt){opt=opt||{};const j=JAM.find(x=>x.k===jk);let n=0;
     if(opt.seq&&idx<2){const nk=order[idx+1],nj=JAM.find(x=>x.k===nk);nxt.innerHTML=`${idx<2?`<div class="small">${t('duaPause')}</div>`:''}<div class="row"><button class="btn pri" id="gn">${t('goNextJamrah',{j:t(nj.lbl)})}</button></div>`;nxt.querySelector('#gn').onclick=()=>goScene('jamarat',nk,()=>openStoning(nk,opt),true);}
     else{if(opt.full){store.set(opt.seq?'stoned_three':'stoned_nahr',true);}if(opt.onDone)nxt.innerHTML=`<div class="row"><button class="btn pri" id="bk">${t('cont')}</button></div>`,nxt.querySelector('#bk').onclick=opt.onDone;}}};
   tapTarget=()=>th.click();});}
-function finishJourney(){store.set('jprog',0);store.set('stoned_nahr',false);store.set('stoned_three',false);if(token)rpc('mecca_hajj_done',{p_token:token}).then(r=>{if(r&&r.user)me=r.user;}).catch(()=>{});chime(783.99,.3);
+function finishJourney(){OT('course_lesson_done',{lesson:'finish'});store.set('jprog',0);store.set('stoned_nahr',false);store.set('stoned_three',false);if(token)rpc('mecca_hajj_done',{p_token:token}).then(r=>{if(r&&r.user)me=r.user;}).catch(()=>{});chime(783.99,.3);
  openSheet(t('certTitle'),`<div class="big2">${t('journeyDone')}</div>${dhikrHTML('alhamdulillah',true)}<div class="row"><button class="btn pri" id="cb">${t('certBtn')}</button><button class="btn" id="cl">${t('close')}</button></div><div class="note">${t('certNote')}</div>`,r=>{r.querySelector('#cb').onclick=certificate;r.querySelector('#cl').onclick=closeSheet;});}
 function wrapLines(g,text,maxW){const out=[];const isCJK=/[㐀-鿿]/.test(text);const parts=isCJK?Array.from(text):text.split(' ');let line='';parts.forEach(p=>{const test=line?(isCJK?line+p:line+' '+p):p;if(g.measureText(test).width>maxW&&line){out.push(line);line=p;}else line=test;});if(line)out.push(line);return out;}
 function certificate(){const W=1080,H=1350,[c,g]=mkC(W,H);g.fillStyle='#fbfaf6';g.fillRect(0,0,W,H);g.strokeStyle='#0b6b52';g.lineWidth=10;g.strokeRect(40,40,W-80,H-80);g.strokeStyle='#b98d36';g.lineWidth=3;g.strokeRect(62,62,W-124,H-124);
@@ -647,7 +648,7 @@ function certificate(){const W=1080,H=1350,[c,g]=mkC(W,H);g.fillStyle='#fbfaf6';
 /* ---------- menu ---------- */
 const SCENES=['haram','mina','arafat','muzdalifah','jamarat'];const scName=id=>t('sc'+id[0].toUpperCase()+id.slice(1));
 const PLACE_KEYS={gate:'pGate',kaaba:'pKaaba',stone:'pStone',maqam:'pMaqam',rows:'pRows',safa:'pSafa',marwa:'pMarwa',sughra:'lblSughra',wusta:'lblWusta',aqabah:'lblAqabah'};
-function openMenu(){const S=cur;openSheet(t('menuT'),`<div class="sec" style="margin-top:0">${t('scenesT')}</div><div class="tele">${SCENES.map(id=>`<button class="btn ${S&&S.id===id?'pri':''}" data-sc="${id}">${scName(id)}</button>`).join('')}</div>
+function openMenu(){OT('open_menu');const S=cur;openSheet(t('menuT'),`<div class="sec" style="margin-top:0">${t('scenesT')}</div><div class="tele">${SCENES.map(id=>`<button class="btn ${S&&S.id===id?'pri':''}" data-sc="${id}">${scName(id)}</button>`).join('')}</div>
  ${S&&S.menu&&S.menu.length>1?`<div class="sec">${t('goT')} · ${scName(S.id)}</div><div class="tele">${S.menu.map(k=>`<button class="btn" data-pl="${k}">${t(PLACE_KEYS[k]||'pGate')}</button>`).join('')}</div>`:''}
  <div class="sec">${t('toolsH')}</div><div class="tele"><button class="btn" data-go="req">📋 ${t('tReq')}</button><button class="btn" data-go="gallery">🖼 ${t('tGallery')}</button><button class="btn" data-go="journey">🕋 ${t('jT')}</button><button class="btn" data-go="support">🤍 ${t('support')}</button><button class="btn" data-go="feedback">✉️ ${t('fbT')}</button></div>
  <div class="sec">${t('mSettings')}</div><div class="row" style="justify-content:flex-start"><button class="btn" id="mlang">🌐 ${t('other')}</button><button class="btn" id="mamb">🔊 ${t('mAmbient')} · ${audioOn?t('mOn'):t('mOff')}</button></div>
