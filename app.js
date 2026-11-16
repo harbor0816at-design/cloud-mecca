@@ -7,7 +7,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const mmss=ms=>{const s=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${m}:${String(x).padStart(2,'0')}`;};
 
 /* ---------- language: Arabic first, Chinese second ---------- */
-const LANG=(()=>{const s=store.get('lang',null);return s==='zh'?'zh':'ar';})();
+const LANG=(()=>{try{const u=new URLSearchParams(location.search).get('lang');if(u==='zh'||u==='ar'){store.set('lang',u);return u;}}catch(_){}const s=store.get('lang',null);if(s)return s==='zh'?'zh':'ar';return /^zh/i.test(navigator.language||'')?'zh':'ar';})();
 const AR=LANG==='ar',DICT=window.I18N[LANG],DH=window.DHIKR,LOCALE=AR?'ar-SA':'zh-CN';
 function t(k,v){let s=DICT[k];if(s==null)s=window.I18N.ar[k];if(s==null)return k;if(v)for(const x in v)s=s.split('{'+x+'}').join(v[x]);return s;}
 document.documentElement.lang=AR?'ar':'zh-CN';document.documentElement.dir=AR?'rtl':'ltr';
@@ -631,7 +631,7 @@ function openStoning(jk,opt){opt=opt||{};const j=JAM.find(x=>x.k===jk);let n=0;
     else{if(opt.full){store.set(opt.seq?'stoned_three':'stoned_nahr',true);}if(opt.onDone)nxt.innerHTML=`<div class="row"><button class="btn pri" id="bk">${t('cont')}</button></div>`,nxt.querySelector('#bk').onclick=opt.onDone;}}};
   tapTarget=()=>th.click();});}
 function finishJourney(){OT('course_lesson_done',{lesson:'finish'});store.set('jprog',0);store.set('stoned_nahr',false);store.set('stoned_three',false);if(token)rpc('mecca_hajj_done',{p_token:token}).then(r=>{if(r&&r.user)me=r.user;}).catch(()=>{});chime(783.99,.3);
- openSheet(t('certTitle'),`<div class="big2">${t('journeyDone')}</div>${dhikrHTML('alhamdulillah',true)}<div class="row"><button class="btn pri" id="cb">${t('certBtn')}</button><button class="btn" id="cl">${t('close')}</button></div><div class="note">${t('certNote')}</div>`,r=>{r.querySelector('#cb').onclick=certificate;r.querySelector('#cl').onclick=closeSheet;});}
+ openSheet(t('certTitle'),`<div class="big2">${t('journeyDone')}</div>${dhikrHTML('alhamdulillah',true)}<div class="row"><button class="btn pri" id="cb">${t('certBtn')}</button><button class="btn" id="cl">${t('close')}</button></div><div class="sec">${t('shareDoneH')}</div>${shareRow()}<div class="note">${t('certNote')}</div>`,r=>{r.querySelector('#cb').onclick=certificate;r.querySelector('#cl').onclick=closeSheet;bindShare(r,t('shareDoneMsg'));});}
 function wrapLines(g,text,maxW){const out=[];const isCJK=/[㐀-鿿]/.test(text);const parts=isCJK?Array.from(text):text.split(' ');let line='';parts.forEach(p=>{const test=line?(isCJK?line+p:line+' '+p):p;if(g.measureText(test).width>maxW&&line){out.push(line);line=p;}else line=test;});if(line)out.push(line);return out;}
 function certificate(){const W=1080,H=1350,[c,g]=mkC(W,H);g.fillStyle='#fbfaf6';g.fillRect(0,0,W,H);g.strokeStyle='#0b6b52';g.lineWidth=10;g.strokeRect(40,40,W-80,H-80);g.strokeStyle='#b98d36';g.lineWidth=3;g.strokeRect(62,62,W-124,H-124);
  for(let x=120;x<W-80;x+=120){star8(g,x,110,22);g.strokeStyle='#b98d36';g.stroke();star8(g,x,H-110,22);g.stroke();}
@@ -656,7 +656,20 @@ function openMenu(){OT('open_menu');const S=cur;openSheet(t('menuT'),`<div class
  root.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>goScene(b.dataset.sc,'spawn'));root.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>goScene(S.id,b.dataset.pl));
  root.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goDo(b.dataset.go));root.querySelector('#mlang').onclick=switchLang;root.querySelector('#mamb').onclick=()=>{setAudio(!audioOn);store.set('amb',audioOn);openMenu();};});}
 $('#menubtn').onclick=openMenu;
-function goDo(kind){if(kind==='feedback')return openFeedback();if(kind==='journey')return openJourney();if(kind==='salah')return openSalah();if(kind==='tasbih')return openTasbih();if(kind==='wall')return openWall();if(kind==='quran')return openQuran();if(kind==='req')return openReq();if(kind==='gallery')return openGallery();if(kind==='support')return openSupport();}
+
+/* ---------- share & invite ---------- */
+const SITE='https://cloudmecca.app';
+function refCode(){if(me&&me.id)return String(me.id).replace(/-/g,'').slice(0,8);let a='';try{a=localStorage.getItem('ops_anon_id')||'';}catch(_){}return a.slice(0,8)||'x';}
+function shareURL(ch,extra){const q=new URLSearchParams({ref:refCode(),utm_source:ch,utm_medium:'share',lang:LANG});if(extra)Object.entries(extra).forEach(([k,v])=>q.set(k,v));return SITE+'/?'+q.toString();}
+function shareTo(ch,msg,extra){OT('share_click',{channel:ch});const url=shareURL(ch,extra),m=msg||t('shareMsg'),enc=encodeURIComponent;
+ const map={whatsapp:`https://wa.me/?text=${enc(m+'\n'+url)}`,telegram:`https://t.me/share/url?url=${enc(url)}&text=${enc(m)}`,x:`https://twitter.com/intent/tweet?text=${enc(m)}&url=${enc(url)}`,facebook:`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`};
+ if(ch==='native'){if(navigator.share){navigator.share({title:t('appName'),text:m,url}).catch(()=>{});}else shareTo('copy',msg,extra);return;}
+ if(ch==='copy'){const txt=m+'\n'+url;(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast(t('copied'))).catch(()=>{prompt(t('shareCopy'),txt);});return;}
+ window.open(map[ch],'_blank','noopener');}
+function shareRow(msg,extra){return`<div class="row share">${navigator.share?`<button class="btn pri" data-sh="native">📤 ${t('shareNative')}</button>`:''}<button class="btn" data-sh="whatsapp">WhatsApp</button><button class="btn" data-sh="telegram">Telegram</button><button class="btn" data-sh="x">X</button><button class="btn" data-sh="facebook">Facebook</button><button class="btn" data-sh="copy">🔗 ${t('shareCopy')}</button></div>`;}
+function bindShare(root,msg,extra){root.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>shareTo(b.dataset.sh,msg,extra));}
+function openShare(){OT('open_share');openSheet(t('shareT'),`<div class="p">${t('shareP')}</div>${shareRow()}<div class="note">${t('shareNote')}</div>`,root=>bindShare(root));}
+function goDo(kind){if(kind==='feedback')return openFeedback();if(kind==='share')return openShare();if(kind==='journey')return openJourney();if(kind==='salah')return openSalah();if(kind==='tasbih')return openTasbih();if(kind==='wall')return openWall();if(kind==='quran')return openQuran();if(kind==='req')return openReq();if(kind==='gallery')return openGallery();if(kind==='support')return openSupport();}
 document.querySelectorAll('#dock [data-go]').forEach(b=>b.onclick=e=>{e.stopPropagation();goDo(b.dataset.go);});
 
 /* ---------- audio: soft wind/crowd murmur (no music) + gentle chimes ---------- */
@@ -704,5 +717,6 @@ function begin(kind,step){introOn=false;$('#intro').classList.add('hide');docume
  const h=$('#hint');h.textContent=t(isTouch?'hintTouch':'hintDesk');h.style.opacity=1;hintT=7;const p=cur.places.spawn;P.mode='anim';P.x=p.x;P.z=p.z+6;P.yaw=p.yaw;moveTo({x:p.x,z:p.z,eye:1.65,yaw:p.yaw,pitch:.12},2.2,()=>{P.mode='walk';});}
 document.querySelectorAll('#intro [data-go]').forEach(b=>b.onclick=e=>{e.preventDefault();begin(b.dataset.go);});
 document.querySelectorAll('#intro [data-step]').forEach(b=>b.onclick=()=>begin(null,b.dataset.step));
+(()=>{try{const q=new URLSearchParams(location.search),st=q.get('step'),g=q.get('go');if((st&&SM[st])||(g&&/^(journey|salah|tasbih|wall|quran|req|gallery|share|feedback)$/.test(g))){fontsReady().then(()=>setTimeout(()=>{if(introOn)begin(g||null,st&&SM[st]?st:null);},300));}}catch(_){}})();
 window.__mecca={P,goScene,openStep,openJourney,openSalah,openTasbih,openQuran,openReq,openGallery,openStoning,SC,get cur(){return cur;}};
 })();

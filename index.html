@@ -4,7 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>مكة في السحاب · 云上麦加</title>
-<meta name="description" content="محاكاة تعليمية لرحلة الحج خطوة بخطوة في مشاهد ثلاثية الأبعاد · 一步步模拟朝觐的 3D 教学体验">
+<meta name="description" content="مكة في السحاب: محاكاة مجانية لمناسك الحج خطوة بخطوة في مشاهد ثلاثية الأبعاد — الإحرام، الطواف، السعي، عرفة، مزدلفة، رمي الجمرات — مع مواقيت الصلاة والقبلة والسبحة. 云上麦加：免费的朝觐功课 3D 模拟。">
+<meta name="keywords" content="محاكاة الحج, مناسك الحج, تعليم الحج, الحج خطوة بخطوة, طواف, سعي, عرفة, رمي الجمرات, مواقيت الصلاة, القبلة, 朝觐, 朝觐功课, 麦加, 克尔白, 礼拜时间, 朝向">
+<link rel="canonical" href="https://cloudmecca.app/">
+<link rel="alternate" hreflang="ar" href="https://cloudmecca.app/?lang=ar">
+<link rel="alternate" hreflang="zh" href="https://cloudmecca.app/?lang=zh">
+<link rel="alternate" hreflang="x-default" href="https://cloudmecca.app/">
 <meta name="theme-color" content="#0b6b52">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
@@ -13,9 +18,21 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="مكة في السحاب">
-<meta property="og:title" content="مكة في السحاب · 云上麦加">
-<meta property="og:description" content="محاكاة رحلة الحج خطوة بخطوة · 朝觐模拟">
-<meta property="og:image" content="/icon-512.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="مكة في السحاب · Cloud Mecca">
+<meta property="og:url" content="https://cloudmecca.app/">
+<meta property="og:title" content="مكة في السحاب · تدرّب على مناسك الحج خطوة بخطوة">
+<meta property="og:description" content="محاكاة مجانية ثلاثية الأبعاد لمناسك الحج من الميقات إلى طواف الوداع · 云上麦加：3D 一步步模拟朝觐">
+<meta property="og:image" content="https://cloudmecca.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="مكة في السحاب · تدرّب على مناسك الحج خطوة بخطوة">
+<meta name="twitter:description" content="محاكاة مجانية ثلاثية الأبعاد لمناسك الحج · 云上麦加">
+<meta name="twitter:image" content="https://cloudmecca.app/og.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"مكة في السحاب","alternateName":["Cloud Mecca","云上麦加"],"url":"https://cloudmecca.app/","image":"https://cloudmecca.app/og.png","applicationCategory":"EducationalApplication","operatingSystem":"Web, Android, iOS","inLanguage":["ar","zh"],"description":"محاكاة تعليمية مجانية لمناسك الحج خطوة بخطوة في مشاهد ثلاثية الأبعاد، مع مواقيت الصلاة والقبلة.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"Fidova Technology"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700&family=Noto+Naskh+Arabic:wght@400;600&family=Noto+Sans+SC:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -195,8 +212,9 @@ ol.st,ul.st{padding-inline-start:22px;line-height:1.9;font-size:15px;color:#3341
       <button class="tool" data-go="quran"><b>📖</b><span data-i18n="tQuran"></span></button>
       <button class="tool" data-go="wall"><b>🤲</b><span data-i18n="tWall"></span></button>
       <button class="tool" data-go="gallery"><b>🖼</b><span data-i18n="tGallery"></span></button>
+      <button class="tool" data-go="share"><b>📤</b><span data-i18n="tShare"></span></button>
     </div>
-    <div class="links"><a href="/privacy.html" data-i18n="privacy"></a><a href="#" data-go="support" data-i18n="support"></a><a href="#" data-go="feedback" data-i18n="fbT"></a><a href="#" id="installLink" style="display:none" data-i18n="install"></a></div>
+    <div class="links"><a href="/guide/" id="guideLink">دليل الحج · 朝觐指南</a><a href="/privacy.html" data-i18n="privacy"></a><a href="#" data-go="support" data-i18n="support"></a><a href="#" data-go="feedback" data-i18n="fbT"></a><a href="#" id="installLink" style="display:none" data-i18n="install"></a></div>
     <div class="disc" data-i18n="disclaimer"></div>
   </div>
 </div>
@@ -206,8 +224,8 @@ ol.st,ul.st{padding-inline-start:22px;line-height:1.9;font-size:15px;color:#3341
 <script>OpsTrack.init({product:'mecca',supabaseUrl:'https://smwqqiebkdaheikihbrg.supabase.co',anonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtd3FxaWVia2RhaGVpa2loYnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5NzU2NzksImV4cCI6MjEwNzU1MTY3OX0.ouoYJ_OTLp4aazXn7H9xcwGJQOQ-pF1fttwR7U5WaG4',getToken:function(){try{return JSON.parse(localStorage.getItem('mecca_tok'));}catch(e){return null;}}});</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/i18n.js?v=3"></script>
+<script src="/i18n.js?v=4"></script>
 <script src="/pt.js?v=3"></script>
-<script src="/app.js?v=3"></script>
+<script src="/app.js?v=4"></script>
 </body>
 </html>
