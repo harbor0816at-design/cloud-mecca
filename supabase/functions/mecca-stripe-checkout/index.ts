@@ -1,8 +1,11 @@
 // Creates a Stripe Checkout Session for a pending Cloud Mecca order and returns its URL.
-// Key: env STRIPE_SECRET_KEY, else Vault secret mecca_stripe_secret_key, ALLOWED_ORIGINS (optional, comma-separated).
+// Key: env MECCA_STRIPE_SECRET_KEY (Cloud Mecca's own Stripe account). No fallback to other projects' keys.
+// ALLOWED_ORIGINS (optional, comma-separated).
 const SB = Deno.env.get("SUPABASE_URL")!, SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-let SK = Deno.env.get("STRIPE_SECRET_KEY") || "";
-const ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") || "https://cloud-mecca.vercel.app,http://localhost:3000,http://localhost:5173").split(",").map((s) => s.trim());
+const SK = Deno.env.get("MECCA_STRIPE_SECRET_KEY") || "";
+const SITE = "https://cloudmecca.app"; // canonical domain: production customers always return here after paying
+const BUILTIN = [SITE, "https://www.cloudmecca.app", "https://cloud-mecca.vercel.app"];
+const ORIGINS = [...BUILTIN, ...(Deno.env.get("ALLOWED_ORIGINS") || "http://localhost:3000,http://localhost:5173").split(",").map((s) => s.trim()).filter(Boolean)];
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const rpc = async (fn: string, args: unknown) => {
@@ -16,11 +19,11 @@ const NAMES: Record<string, Record<string, string>> = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
-    if (!SK) SK = (await rpc("mecca_secret", { p_name: "mecca_stripe_secret_key" })) || "";
     if (!SK) return json({ error: "not_configured" }, 503);
     const { token, order, lang, origin } = await req.json();
-    const o = String(origin || "");
-    if (!ORIGINS.includes(o) && !/^https:\/\/cloud-mecca(-[a-z0-9-]+)?\.vercel\.app$/.test(o)) return json({ error: "bad_origin" }, 400);
+    const from = String(origin || "");
+    if (!ORIGINS.includes(from) && !/^https:\/\/cloud-mecca(-[a-z0-9-]+)?\.vercel\.app$/.test(from)) return json({ error: "bad_origin" }, 400);
+    const o = BUILTIN.includes(from) ? SITE : from; // previews / localhost keep their own origin for testing
     const ord = await rpc("mecca_pay_get", { p_token: token, p_id: order });
     if (!ord || ord.status !== "pending") return json({ error: "bad_order" }, 400);
     const L = lang === "zh" ? "zh" : lang === "ar" ? "ar" : "en";
@@ -36,6 +39,8 @@ Deno.serve(async (req) => {
     f.set("client_reference_id", ord.id);
     f.set("metadata[order]", ord.id);
     f.set("payment_intent_data[metadata][order]", ord.id);
+    f.set("metadata[project]", "mecca");
+    f.set("payment_intent_data[metadata][project]", "mecca");
     f.set("locale", L === "zh" ? "zh" : "auto");
     const r = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { Authorization: `Bearer ${SK}`, "Content-Type": "application/x-www-form-urlencoded", "Idempotency-Key": `mecca-${ord.id}` }, body: f });
     const s = await r.json();
