@@ -119,6 +119,62 @@ const EXTRA = {
 <a class="cta alt" href="${c.base}">مناسك الحج بالترتيب</a>
 <p class="muted">هذه قائمة إرشادية عامة وليست فتوى ولا بديلاً عن تعليمات الجهات الرسمية والحملة.</p>`,
       ld: { '@type': 'Article', headline: 'قائمة مستلزمات الحج والعمرة', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
+    { slug: 'miqat', h1: 'مواقيت الإحرام الخمسة ومن أين تُحرم', title: 'مواقيت الإحرام الخمسة: من أين يُحرم الحاج والمعتمر؟ · مكة في السحاب',
+      desc: 'المواقيت المكانية الخمسة للحج والعمرة: ذو الحليفة، الجحفة، قرن المنازل، يلملم، ذات عرق — لمن هي، وكيف يُحرم المسافر بالطائرة، ومن كان دون المواقيت.',
+      body: c => `<h1>مواقيت الإحرام الخمسة</h1>
+<p>الميقات هو المكان الذي لا يتجاوزه من أراد الحج أو العمرة إلا محرماً. وقّت النبي ﷺ خمسة مواقيت مكانية، لكل جهة ميقاتها، وهي لأهلها ولمن مرّ بها من غيرهم.</p>
+<div class="card"><table style="width:100%;border-collapse:collapse">
+<tr><th style="text-align:start;padding:8px;border-bottom:2px solid #0b6b52">الميقات</th><th style="text-align:start;padding:8px;border-bottom:2px solid #0b6b52">يُعرف اليوم بـ</th><th style="text-align:start;padding:8px;border-bottom:2px solid #0b6b52">لأهل</th></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #e3e7e5">ذو الحليفة</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">أبيار علي</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">المدينة المنورة ومن مرّ بها</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #e3e7e5">الجحفة</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">يُحرم الناس اليوم من رابغ</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">الشام ومصر والمغرب</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #e3e7e5">قرن المنازل</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">السيل الكبير (ووادي محرم)</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">نجد، ومن جاء عن طريق الطائف ومنهم كثير من القادمين براً من الخليج</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #e3e7e5">يلملم</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">السعدية</td><td style="padding:8px;border-bottom:1px solid #e3e7e5">اليمن ومن جاء من جهة الجنوب</td></tr>
+<tr><td style="padding:8px">ذات عرق</td><td style="padding:8px">الضريبة</td><td style="padding:8px">العراق ومن جاء من جهة الشرق</td></tr></table></div>
+<h2>من كان دون المواقيت</h2>
+<p>من كان مسكنه بين الميقات ومكة يُحرم من مكانه، وأهل مكة يُحرمون بالحج من مكة.</p>
+<h2>المسافر بالطائرة</h2>
+<p>يُحرم إذا حاذى الميقات في الجو، ولا يؤخّر الإحرام إلى جدة إن كان قد مرّ بالميقات. كثير من شركات الطيران تُعلن قبل المحاذاة؛ ويُستحب أن يتهيأ قبل الرحلة (الاغتسال ولبس الإحرام) ثم ينوي عند المحاذاة.</p>
+<a class="cta" href="${appLink('ar', { step: 'ihram', utm_campaign: 'miqat' })}">🕋 تدرّب على الإحرام والتلبية في المحاكاة</a>
+<a class="cta alt" href="${c.base}ihram.html">الإحرام خطوة بخطوة</a>
+<p class="muted">ملخص تعليمي وليس فتوى؛ في المسائل التفصيلية ارجع إلى أهل العلم وإلى إرشادات وزارة الحج والعمرة وحملتك.</p>`,
+      ld: { '@type': 'Article', headline: 'مواقيت الإحرام الخمسة', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
+    { slug: 'umrah-ramadan', h1: 'عمرة رمضان: دليل عملي قبل السفر', title: 'عمرة رمضان 1448: دليل عملي للتصريح والزحام والاستعداد · مكة في السحاب',
+      desc: 'دليل عملي لعمرة رمضان: التصريح عبر نسك، الزحام في العشر الأواخر، تنظيم الوقت مع الصيام، وما تحمله معك — مع محاكاة ثلاثية الأبعاد لخطوات العمرة.',
+      body: c => `<h1>عمرة رمضان: دليل عملي قبل السفر</h1>
+<p>رمضان أكثر مواسم العمرة ازدحاماً، ويُتوقع أن يبدأ رمضان 1448 هـ في حدود ٨ فبراير 2027 (حسب رؤية الهلال). هذه نصائح عملية تساعدك على أداء عمرتك بهدوء.</p>
+<div class="card"><h2>قبل السفر</h2><ul>
+<li>استخرج تصريح العمرة وحدّد موعدها عبر تطبيق نسك، وتأكد من الحجز في القنوات الرسمية فقط.</li>
+<li>احجز السكن مبكراً؛ العشر الأواخر هي الأعلى طلباً.</li>
+<li>راجع خطوات العمرة بالترتيب حتى لا تتردد وسط الزحام.</li></ul></div>
+<div class="card"><h2>مع الصيام والزحام</h2><ul>
+<li>كثيرون يؤدون العمرة بعد الإفطار أو بعد صلاة التراويح؛ اختر وقتاً تكون فيه مرتاحاً، واشرب ماءً كافياً بين الإفطار والسحور.</li>
+<li>الأدوار العليا وسطح المطاف خيار عند ازدحام صحن المطاف، والمسافة أطول.</li>
+<li>اتفق مع مرافقيك على نقطة لقاء ثابتة، واحمل بطاقة نسك وهاتفاً مشحوناً.</li>
+<li>كبار السن: عربات الطواف والسعي متاحة داخل المسجد الحرام.</li></ul></div>
+<a class="cta" href="${appLink('ar', { step: 'ihram', utm_campaign: 'umrah_ramadan' })}">🕋 امشِ خطوات العمرة في المحاكاة قبل السفر</a>
+<a class="cta alt" href="${c.base}umrah.html">خطوات العمرة بالترتيب</a>
+<a class="cta alt" href="${c.base}checklist.html">قائمة المستلزمات</a>
+<p class="muted">إرشادات عامة وليست فتوى؛ اتبع تعليمات الجهات الرسمية في المسجد الحرام.</p>`,
+      ld: { '@type': 'Article', headline: 'عمرة رمضان: دليل عملي قبل السفر', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
+    { slug: 'first-hajj', h1: 'الحج لأول مرة: ١٠ نصائح عملية', title: 'الحج لأول مرة: ١٠ نصائح عملية قبل السفر وفي المشاعر · مكة في السحاب',
+      desc: 'نصائح عملية لمن يحج لأول مرة: الاستعداد البدني، حفظ ترتيب المناسك، الالتزام بتفويج الحملة، الحرارة، رمي الجمرات، والتعامل مع الزحام.',
+      body: c => `<h1>الحج لأول مرة: ١٠ نصائح عملية</h1>
+<p>أول حجة تجربة عظيمة، والاستعداد الجيد يجعلها أسهل وأكثر طمأنينة. هذه نصائح عملية جمعناها من إرشادات الجهات الرسمية وتجارب الحجاج.</p>
+<ol class="steps">
+<li><b>ابدأ المشي يومياً قبل السفر بأسابيع</b><small>الحاج يمشي كثيراً بين المشاعر وفي الطواف والسعي.</small></li>
+<li><b>احفظ ترتيب المناسك</b><small>إذا عرفت ماذا يأتي بعد ماذا، لن تتوتر وسط الزحام. <a href="${c.base}">المناسك بالترتيب</a>.</small></li>
+<li><b>تعرّف على الأماكن قبل أن تراها</b><small>أين يبدأ الطواف، أين الصفا والمروة، كيف تبدو منى وعرفة والجمرات — هذا ما صُممت له المحاكاة.</small></li>
+<li><b>التزم بتعليمات حملتك ومواعيد التفويج</b><small>خاصة في رمي الجمرات؛ المواعيد المحددة وُضعت لسلامتك.</small></li>
+<li><b>احذر الحرارة</b><small>مظلة، ماء دائماً، وتجنّب التعرض للشمس وقت الظهيرة قدر الإمكان.</small></li>
+<li><b>احمل بطاقة نسك وسوار الحملة دائماً</b><small>هي هويتك في المشاعر.</small></li>
+<li><b>خفّف حقيبتك في منى وعرفة ومزدلفة</b><small>انظر <a href="${c.base}checklist.html">قائمة المستلزمات</a>.</small></li>
+<li><b>نم جيداً قبل يوم عرفة</b><small>يوم عرفة هو ركن الحج الأعظم، فاحرص أن تكون فيه حاضر الذهن للدعاء.</small></li>
+<li><b>الصبر والرفق بالناس</b><small>ملايين الحجاج في مكان واحد؛ الهدوء جزء من الحج المبرور.</small></li>
+<li><b>اسأل أهل العلم المرافقين لحملتك</b><small>في أي مسألة تخص صحة النسك.</small></li></ol>
+<a class="cta" href="${appLink('ar', { go: 'journey', utm_campaign: 'first_hajj' })}">🕋 ابدأ الرحلة الكاملة الموجّهة</a>
+<a class="cta alt" href="${c.base}hajj-2027.html">موعد الحج 2027</a>
+<p class="muted">نصائح عامة وليست فتوى ولا بديلاً عن تعليمات الجهات الرسمية.</p>`,
+      ld: { '@type': 'Article', headline: 'الحج لأول مرة: ١٠ نصائح عملية', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
   ],
   zh: [
     { slug: 'umrah', h1: '副朝（欧姆拉）功课步骤', title: '副朝（欧姆拉）功课步骤详解 · 云上麦加',
@@ -180,6 +236,52 @@ const EXTRA = {
 <a class="cta alt" href="${c.base}">朝觐功课一步步</a>
 <p class="muted">本清单是一般性参考，不是教法裁决，也不能代替官方和朝觐团的要求。</p>`,
       ld: { '@type': 'Article', headline: '朝觐与副朝行李清单', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
+    { slug: 'miqat', h1: '五处戒关（受戒地点）', title: '五处戒关：朝觐和副朝在哪里受戒？· 云上麦加',
+      desc: '朝觐与副朝的五处戒关：祖勒侯莱法、朱哈法、格尔努麦纳齐勒、叶兰姆兰、扎图伊尔格——分别适用于哪些方向的人，坐飞机怎么受戒。',
+      body: c => `<h1>五处戒关（受戒地点）</h1>
+<p>戒关是打算朝觐或做副朝的人必须受戒后才能越过的地点。先知规定了五处戒关，每个方向各有一处，适用于当地人和途经的人。</p>
+<div class="card"><ul>
+<li><b>祖勒侯莱法</b>（今称阿比亚尔·阿里）：麦地那方向。</li>
+<li><b>朱哈法</b>（今多在拉比格受戒）：沙姆、埃及、马格里布方向。</li>
+<li><b>格尔努麦纳齐勒</b>（今称赛勒·卡比尔）：纳季德方向，经塔伊夫来的人，包括许多从海湾走陆路来的人。</li>
+<li><b>叶兰姆兰</b>（今称萨阿迪耶）：也门和南方。</li>
+<li><b>扎图伊尔格</b>：伊拉克和东方。</li></ul></div>
+<h2>住在戒关以内的人</h2><p>住在戒关和麦加之间的人从自己住处受戒；麦加居民为正朝在麦加受戒。</p>
+<h2>坐飞机</h2><p>飞机飞过与戒关平行的位置时就要受戒，已经经过戒关的不要拖到吉达再受戒。很多航班会在临近时广播；最好登机前做好大净、换好戒衣，到时举意即可。</p>
+<a class="cta" href="${appLink('zh', { step: 'ihram', utm_campaign: 'miqat' })}">🕋 在模拟中演练受戒和应召词</a>
+<p class="muted">教学摘要，不是教法裁决；细节请教阿訇和官方朝觐机构。</p>`,
+      ld: { '@type': 'Article', headline: '五处戒关', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
+    { slug: 'umrah-ramadan', h1: '斋月副朝实用指南', title: '斋月副朝实用指南：许可、人流与准备 · 云上麦加',
+      desc: '斋月做副朝：通过 Nusuk 办许可、最后十天人最多、斋戒期间怎么安排时间、要带什么——配 3D 模拟演练副朝步骤。',
+      body: c => `<h1>斋月副朝实用指南</h1>
+<p>斋月是副朝人最多的时候，伊历 1448 年斋月预计在 2027 年 2 月 8 日前后开始（以见月为准）。</p>
+<div class="card"><ul>
+<li>通过 Nusuk 应用办副朝许可、预约时间，只走官方渠道。</li>
+<li>尽早订住处，最后十天最紧张。</li>
+<li>很多人在开斋后或泰拉威哈拜后做副朝；开斋到封斋之间多喝水。</li>
+<li>巡游区太挤时可以去楼上或屋顶层，路程更长。</li>
+<li>和同伴约好固定集合点，随身带 Nusuk 卡和充满电的手机；老人可用清真寺内的巡游/奔走代步车。</li></ul></div>
+<a class="cta" href="${appLink('zh', { step: 'ihram', utm_campaign: 'umrah_ramadan' })}">🕋 出发前在模拟中走一遍副朝</a>
+<a class="cta alt" href="${c.base}umrah.html">副朝功课步骤</a>
+<p class="muted">一般性建议，不是教法裁决。</p>`,
+      ld: { '@type': 'Article', headline: '斋月副朝实用指南', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
+    { slug: 'first-hajj', h1: '第一次朝觐：10 条实用建议', title: '第一次朝觐：10 条实用建议 · 云上麦加',
+      desc: '第一次去朝觐的实用建议：提前练走路、记住功课顺序、听从朝觐团和分批安排、防暑、射石安全、在人群中保持耐心。',
+      body: c => `<h1>第一次朝觐：10 条实用建议</h1>
+<ol class="steps">
+<li><b>出发前几周每天走路</b><small>朝觐期间步行量很大。</small></li>
+<li><b>记住功课顺序</b><small><a href="${c.base}">功课一步步</a>。</small></li>
+<li><b>提前熟悉各个地点</b><small>巡游起点、萨法和麦尔沃、米纳、阿拉法特、石柱——这正是模拟的用处。</small></li>
+<li><b>听从朝觐团和分批时间</b><small>特别是射石，规定时间是为了安全。</small></li>
+<li><b>防暑</b><small>遮阳伞、随时喝水，尽量避开正午暴晒。</small></li>
+<li><b>随身带 Nusuk 卡和团里的手环</b><small>这是你在圣地的身份证明。</small></li>
+<li><b>米纳、阿拉法特、穆兹代里法轻装</b><small>见<a href="${c.base}checklist.html">行李清单</a>。</small></li>
+<li><b>阿拉法特日前一晚睡好</b><small>阿拉法特站立是朝觐最重要的功课，要精神饱满地祈祷。</small></li>
+<li><b>耐心，体谅别人</b><small>几百万人在同一个地方。</small></li>
+<li><b>功课问题请教随团的阿訇</b><small>关系到功课是否有效的问题不要自己猜。</small></li></ol>
+<a class="cta" href="${appLink('zh', { go: 'journey', utm_campaign: 'first_hajj' })}">🕋 开始完整引导之旅</a>
+<p class="muted">一般性建议，不是教法裁决，也不能代替官方要求。</p>`,
+      ld: { '@type': 'Article', headline: '第一次朝觐：10 条实用建议', publisher: { '@type': 'Organization', name: 'Fidova Technology' } } },
   ],
 };
 
