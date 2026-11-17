@@ -285,6 +285,18 @@ const EXTRA = {
   ],
 };
 
+const SHARE_TXT = { ar: { h: 'شارك هذا الدليل مع من ينوي الحج أو العمرة', msg: 'دليل مفيد لمن ينوي الحج أو العمرة:' }, zh: { h: '分享给准备朝觐或副朝的亲友', msg: '准备朝觐/副朝的话值得一看：' } };
+function shareRow(lang, url, title) {
+  const s = SHARE_TXT[lang], enc = encodeURIComponent;
+  const link = ch => `${SITE}${url}?utm_source=${ch}&utm_medium=share&utm_campaign=guide`;
+  const msg = `${s.msg} ${title.split(' · ')[0]}`;
+  return `<div class="card share"><b>${esc(s.h)}</b><br>
+<a data-track="guide_share_whatsapp" href="https://wa.me/?text=${enc(msg + '\n' + link('whatsapp'))}" rel="noopener" target="_blank">WhatsApp</a>
+<a data-track="guide_share_telegram" href="https://t.me/share/url?url=${enc(link('telegram'))}&text=${enc(msg)}" rel="noopener" target="_blank">Telegram</a>
+<a data-track="guide_share_x" href="https://twitter.com/intent/tweet?text=${enc(msg)}&url=${enc(link('x'))}" rel="noopener" target="_blank">X</a>
+<a data-track="guide_share_facebook" href="https://www.facebook.com/sharer/sharer.php?u=${enc(link('facebook'))}" rel="noopener" target="_blank">Facebook</a></div>`;
+}
+
 function page({ lang, url, title, desc, body, alt, jsonld, image }) {
   const c = L[lang];
   return `<!DOCTYPE html>
@@ -314,6 +326,7 @@ ${alt.map(([h, u]) => `<link rel="alternate" hreflang="${h}" href="${SITE}${u}">
 <header><a href="${c.base}">🕋 ${esc(c.site)}</a><a href="${alt.find(a => a[0] === c.other)[1]}" hreflang="${c.other}">${c.otherLabel}</a></header>
 <main>
 ${body}
+${shareRow(lang, url, title)}
 </main>
 <footer>${esc(I18N[lang].disclaimer)}<br><a href="/privacy.html">${esc(I18N[lang].privacy || 'Privacy')}</a> · © Fidova Technology</footer>
 <script src="/ops-track.js?v=1"></script>
