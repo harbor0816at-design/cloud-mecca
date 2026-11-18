@@ -418,7 +418,7 @@ ${body}
 ${shareRow(lang, url, title)}
 </main>
 <footer>${esc(I18N[lang].disclaimer)}<br><a href="/privacy.html">${esc(I18N[lang].privacy || 'Privacy')}</a> · © Fidova Technology</footer>
-<script src="/ops-track.js?v=1"></script>
+<script src="/ops-track.js?v=2"></script>
 <script>try{OpsTrack.init({product:'mecca',supabaseUrl:'https://smwqqiebkdaheikihbrg.supabase.co',anonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtd3FxaWVia2RhaGVpa2loYnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5NzU2NzksImV4cCI6MjEwNzU1MTY3OX0.ouoYJ_OTLp4aazXn7H9xcwGJQOQ-pF1fttwR7U5WaG4'});}catch(e){}</script>
 </body>
 </html>
